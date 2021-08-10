@@ -9,10 +9,8 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class HelpBotCommand : BaseBotCommand
     {
-        public HelpBotCommand() : base("/help")
-        {
+        public HelpBotCommand() : base("/help") { }
 
-        }
         public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
         {
             return await bot.SendTextMessageAsync(message.Chat.Id, "Help");

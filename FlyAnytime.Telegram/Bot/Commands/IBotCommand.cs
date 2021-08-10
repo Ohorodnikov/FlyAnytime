@@ -17,6 +17,9 @@ namespace FlyAnytime.Telegram.Bot.Commands
     {
         protected BaseBotCommand(string commandName)
         {
+            if (!commandName.StartsWith("/"))
+                throw new ArgumentException("Command must starts from '/'", nameof(commandName));
+
             Command = commandName;
         }
         public string Command { get; }

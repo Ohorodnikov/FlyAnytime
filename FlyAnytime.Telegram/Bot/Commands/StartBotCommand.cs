@@ -9,9 +9,8 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class StartBotCommand : BaseBotCommand
     {
-        public StartBotCommand() : base("/start")
-        {
-        }
+        public StartBotCommand() : base("/start") { }
+
         public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
         {
             return await bot.SendTextMessageAsync(message.Chat.Id, "Registered");

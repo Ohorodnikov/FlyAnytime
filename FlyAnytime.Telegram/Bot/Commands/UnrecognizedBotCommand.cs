@@ -9,14 +9,9 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class UnrecognizedBotCommand : BaseBotCommand
     {
-        public UnrecognizedBotCommand() : base("/unknown")
-        {
-        }
+        public UnrecognizedBotCommand() : base("/unknown") { }
 
-        public override bool CanBeExecuted(string textCommand)
-        {
-            return true;
-        }
+        public override bool CanBeExecuted(string textCommand) => true;
 
         public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
         {

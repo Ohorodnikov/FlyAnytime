@@ -10,10 +10,8 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class Send2ButtonBotCommand : BaseBotCommand
     {
-        public Send2ButtonBotCommand() : base("/loginBtn")
-        {
+        public Send2ButtonBotCommand() : base("/loginBtn") { }
 
-        }
         public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
         {
             var inlineKeyboard = new InlineKeyboardMarkup(new[]
