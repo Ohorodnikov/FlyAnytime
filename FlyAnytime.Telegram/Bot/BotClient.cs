@@ -1,4 +1,6 @@
 ﻿using FlyAnytime.Telegram.Bot.Commands;
+using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
+using FlyAnytime.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -127,11 +129,15 @@ namespace FlyAnytime.Telegram.Bot
 
         private async Task OnCallbackQuery(CallbackQuery callbackQuery)
         {
-            //await _botClient.AnswerCallbackQueryAsync(callbackQuery.Id, $"react on {callbackQuery.Message.MessageId}, data = {callbackQuery.Data}, {callbackQuery.Message.Text}", true);
-            await _botClient.EditMessageTextAsync(callbackQuery.Message.Chat.Id, callbackQuery.Message.MessageId,
-                $"react on {callbackQuery.Message.MessageId}, data = {callbackQuery.Data}",
-                replyMarkup: InlineKeyboardMarkup.Empty()
-                );
+            var pressedButton = _serviceProvider
+                .GetServices<IInlineKeyboardButtonWithAction>()
+                .FirstOrDefault(x => x.IsPressed(callbackQuery.Data))
+                ;
+
+            if (pressedButton == null)
+                throw new Exception("Unknown button was pressed");
+
+            await pressedButton.OnButtonPress(_botClient, callbackQuery.Message);
         }
 
         private async Task OnShippingQuery(ShippingQuery shippingQuery)

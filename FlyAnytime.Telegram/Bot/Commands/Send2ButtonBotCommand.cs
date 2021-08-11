@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,10 +15,10 @@ namespace FlyAnytime.Telegram.Bot.Commands
 
         public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
         {
-            var inlineKeyboard = new InlineKeyboardMarkup(new[]
+            var inlineKeyboard = new InlineKeyboardMarkup(new InlineKeyboardButton[]
                     {
-                        InlineKeyboardButton.WithCallbackData("Approve", "true"),
-                        InlineKeyboardButton.WithCallbackData("Decline", "false"),
+                        new LoginApproveButton(),
+                        new LoginDeclineButton(),
                     });
 
             var res = await bot.SendTextMessageAsync(chatId: message.Chat.Id,

@@ -1,5 +1,6 @@
 using FlyAnytime.Telegram.Bot;
 using FlyAnytime.Telegram.Bot.Commands;
+using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
 using FlyAnytime.Telegram.Services;
 using FlyAnytime.Tools;
 using Microsoft.AspNetCore.Builder;
@@ -48,7 +49,8 @@ namespace FlyAnytime.Telegram
 
 
             services.AddAllImplementations<IBotCommand>();
-
+            services.AddAllImplementations<IInlineKeyboardButtonWithAction>();
+            
             services.AddTransient<BotClient, BotClient>();
 
             services.AddControllers()
