@@ -1,12 +1,15 @@
 using FlyAnytime.Telegram.Bot;
 using FlyAnytime.Telegram.Bot.Commands;
 using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
+using FlyAnytime.Telegram.EF;
+using FlyAnytime.Telegram.Models;
 using FlyAnytime.Telegram.Services;
 using FlyAnytime.Tools;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -48,10 +51,19 @@ namespace FlyAnytime.Telegram
                         => new TelegramBotClient(BotConfig.BotToken, httpClient));
 
 
-            services.AddAllImplementations<IBotCommand>();
-            services.AddAllImplementations<IInlineKeyboardButtonWithAction>();
-            
+            services.AddAllImplementations<IBotCommand>(services.AddScoped);
+            services.AddAllImplementations<IInlineKeyboardButtonWithAction>(services.AddScoped);
+
+            services.AddAllImplementations<IEntity>(services.AddTransient);
+
+            services.AddAllGenericImplementations(typeof(IEntityMap<>), services.AddScoped);
+
+            string connection = Configuration.GetConnectionString("DefaultConnection");
+            services.AddDbContext<EF.TelegramContext>(opt => opt.UseSqlServer(connection));
+
             services.AddTransient<BotClient, BotClient>();
+            services.AddTransient<IBotHelper, BotHelper>();
+
 
             services.AddControllers()
                 .AddNewtonsoftJson()

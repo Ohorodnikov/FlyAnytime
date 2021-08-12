@@ -23,11 +23,11 @@ namespace FlyAnytime.Tools
                 .SelectMany(x => x.DefinedTypes)
                 .Select(x => x.AsType())
                 .ToList();
-                //.Where(type => typeof(IProfile).IsAssignableFrom(type));
 
             return allTypes;
         }
-        public static IServiceCollection AddAllImplementations<TInterface>(this IServiceCollection services)
+
+        public static IServiceCollection AddAllImplementations<TInterface>(this IServiceCollection services, Func<Type, Type, IServiceCollection> registration)
         {
             var allTypes = GetAllTypes();
             var intType = typeof(TInterface);
@@ -40,8 +40,27 @@ namespace FlyAnytime.Tools
 
             foreach (var impl in implementations)
             {
-                services.AddSingleton(intType, impl);
+                registration(intType, impl);
             }
+
+            return services;
+        }
+
+        public static IServiceCollection AddAllGenericImplementations(this IServiceCollection services, Type openInterf, Func<Type, Type, IServiceCollection> registration)
+        {
+            //https://stackoverflow.com/a/56144492
+            GetAllTypes()
+            .Where(item => item.GetInterfaces()
+                                .Where(i => i.IsGenericType)
+                                .Any(i => i.GetGenericTypeDefinition() == openInterf)
+                            && !item.IsAbstract && !item.IsInterface
+                    )
+            .ToList()
+            .ForEach(assignedTypes =>
+            {
+                var serviceType = assignedTypes.GetInterfaces().First(i => i.GetGenericTypeDefinition() == openInterf);
+                registration(serviceType, assignedTypes);
+            });
 
             return services;
         }

@@ -1,5 +1,6 @@
 ﻿using FlyAnytime.Telegram.Bot.Commands;
 using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
+using FlyAnytime.Telegram.EF;
 using FlyAnytime.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -18,11 +19,12 @@ namespace FlyAnytime.Telegram.Bot
     {
         private ITelegramBotClient _botClient;
         IServiceProvider _serviceProvider;
-
-        public BotClient(ITelegramBotClient botClient, IServiceProvider serviceProvider)
+        IBotHelper _botHelper;
+        public BotClient(ITelegramBotClient botClient, IServiceProvider serviceProvider, IBotHelper botHelper)
         {
             _serviceProvider = serviceProvider;
             _botClient = botClient;
+            _botHelper = botHelper;
         }
 
         public async Task ProcessUpdate(Update update)
@@ -96,11 +98,24 @@ namespace FlyAnytime.Telegram.Bot
 
         private async Task ChatMembersAdded(Message message)
         {
+            var bot = message.NewChatMembers.FirstOrDefault(x => x.Id == _botClient.BotId);
+
+            if (bot != null)
+            {
+                await _botHelper.OnAddToGroup(message.Chat.Id);
+                //bot was added
+            }
+
             var user2join = message.NewChatMembers.Select(x => $"{x.FirstName} {x.LastName} (@{x.Username})");
             await _botClient.SendTextMessageAsync(message.Chat.Id, $"Welcome {string.Join(", ", user2join)}");
         }
         private async Task ChatMemberLeft(Message message)
         {
+            if (message.LeftChatMember.Id == _botClient.BotId)
+            {
+                await _botHelper.OnRemoveFromGroup(message.Chat.Id);
+                //bot was removed
+            }
             await _botClient.SendTextMessageAsync(message.Chat.Id, $"Chat left {message.LeftChatMember.FirstName} {message.LeftChatMember.FirstName} (@{message.LeftChatMember.Username})");
         }
 
@@ -162,6 +177,42 @@ namespace FlyAnytime.Telegram.Bot
 
         private async Task OnMyChatMember(ChatMemberUpdated cmu)
         {
+            var currentStatus = cmu.NewChatMember.Status;
+            var oldStatus = cmu.OldChatMember.Status;
+            var userId = cmu.NewChatMember.User.Id;
+
+            if (userId == _botClient.BotId)
+            {
+                if (oldStatus == ChatMemberStatus.Kicked)
+                {
+                    await _botHelper.OnReStartPrivateChat(cmu.Chat.Id);
+                }
+                if (oldStatus == ChatMemberStatus.Left)
+                {
+                    await _botHelper.OnAddToGroup(cmu.Chat.Id);
+                }
+
+                if (oldStatus == ChatMemberStatus.Administrator)
+                {
+                    await _botHelper.OnSetGroupAdmin(cmu.Chat.Id);
+                }
+
+                if (currentStatus == ChatMemberStatus.Kicked)
+                {
+                    await _botHelper.OnKickFromPrivateChat(cmu.Chat.Id);
+                }
+                if (currentStatus == ChatMemberStatus.Left)
+                {
+                    await _botHelper.OnRemoveFromGroup(cmu.Chat.Id);
+                }
+
+                if (currentStatus == ChatMemberStatus.Administrator)
+                {
+                    await _botHelper.OnRemoveFromGroupAdmin(cmu.Chat.Id);
+                }
+            }
+
+
             if (cmu.NewChatMember.Status == ChatMemberStatus.Left)
                 return;
             var chat = await _botClient.GetChatAsync(cmu.Chat.Id);
