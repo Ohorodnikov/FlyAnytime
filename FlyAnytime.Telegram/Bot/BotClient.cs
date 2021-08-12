@@ -90,7 +90,7 @@ namespace FlyAnytime.Telegram.Bot
             {
                 if (cmd.CanBeExecuted(messageCommand))
                 {
-                    await cmd.ExecuteAsync(_botClient, message);
+                    await cmd.ExecuteAsync(message);
                     return;
                 }
             }
@@ -213,12 +213,12 @@ namespace FlyAnytime.Telegram.Bot
             }
 
 
-            if (cmu.NewChatMember.Status == ChatMemberStatus.Left)
-                return;
-            var chat = await _botClient.GetChatAsync(cmu.Chat.Id);
-            var q2 = await _botClient.GetChatMembersCountAsync(cmu.Chat.Id);
+            //if (cmu.NewChatMember.Status == ChatMemberStatus.Left)
+            //    return;
+            //var chat = await _botClient.GetChatAsync(cmu.Chat.Id);
+            //var q2 = await _botClient.GetChatMembersCountAsync(cmu.Chat.Id);
 
-            await _botClient.SendTextMessageAsync(cmu.Chat.Id, $"OnMyChatMember: chatName = {chat.Title}, type = {chat.Type}, count = {q2}, action = {cmu.OldChatMember.Status} - {cmu.NewChatMember.Status}");
+            //await _botClient.SendTextMessageAsync(cmu.Chat.Id, $"OnMyChatMember: chatName = {chat.Title}, type = {chat.Type}, count = {q2}, action = {cmu.OldChatMember.Status} - {cmu.NewChatMember.Status}");
         }
 
         private async Task OnChatMember(ChatMemberUpdated cmu)

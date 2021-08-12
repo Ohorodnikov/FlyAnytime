@@ -1,5 +1,6 @@
 ﻿using FlyAnytime.Telegram.EF;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System;
 
 namespace FlyAnytime.Telegram.Models
 {
@@ -12,13 +13,14 @@ namespace FlyAnytime.Telegram.Models
         public virtual bool HasAdminRights { get; set; }
         public virtual bool IsPaused { get; set; }
         public virtual bool IsRemovedFromChat { get; set; }
+
+        public virtual DateTime CreationDateTime { get; set; }
+        public virtual DateTime? RestartDateTime { get; set; }
     }
 
     public class ChatMapping : EntityMap<Chat>
     {
-        public ChatMapping() : base("Chat")
-        {
-        }
+        public ChatMapping() : base("Chat") { }
 
         public override void SetMapping(EntityTypeBuilder<Chat> mapBuilder)
         {
@@ -26,6 +28,8 @@ namespace FlyAnytime.Telegram.Models
                         .Property(x => x.Id)
                         .IsRequired(true)
                         .ValueGeneratedNever();
+
+            mapBuilder.Property(x => x.CreationDateTime).IsRequired(true);
         }
     }
 }

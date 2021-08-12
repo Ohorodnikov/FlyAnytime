@@ -9,13 +9,13 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class UnrecognizedBotCommand : BaseBotCommand
     {
-        public UnrecognizedBotCommand() : base("/unknown") { }
+        public UnrecognizedBotCommand(IBotHelper bot) : base("/unknown", bot) { }
 
         public override bool CanBeExecuted(string textCommand) => true;
 
-        public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
+        public override async Task<Message> ExecuteAsync(Message message)
         {
-            return await bot.SendTextMessageAsync(message.Chat.Id, $"{message.Text} is not recognized");
+            return await Bot.SendTextMessageAsync(message.Chat.Id, $"{message.Text} is not recognized");
         }
     }
 }

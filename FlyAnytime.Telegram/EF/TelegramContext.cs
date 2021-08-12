@@ -12,11 +12,16 @@ namespace FlyAnytime.Telegram.EF
     {
         IServiceProvider _serviceProvider;
 
+        private static bool _firstRun = true;
+
         public TelegramContext(DbContextOptions<TelegramContext> options, IServiceProvider serviceProvider) : base(options)
         {
             _serviceProvider = serviceProvider;
 
-            Database.EnsureDeleted();
+            if (_firstRun)
+                Database.EnsureDeleted();
+
+            _firstRun = false;
             Database.EnsureCreated();
         }
 

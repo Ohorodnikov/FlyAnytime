@@ -10,7 +10,10 @@ namespace FlyAnytime.Telegram.Bot
 {
     public interface IBotHelper
     {
-        Task OnStartPrivateChat(long chatId);
+        ITelegramBotClient Bot { get; }
+        TelegramContext DbContext { get; }
+
+        Task<global::Telegram.Bot.Types.Message> OnStartPrivateChat(long chatId);
         Task OnReStartPrivateChat(long chatId);
         Task OnKickFromPrivateChat(long chatId);
         Task OnAddToGroup(long chatId);
@@ -21,24 +24,37 @@ namespace FlyAnytime.Telegram.Bot
 
     public class BotHelper : IBotHelper
     {
-        ITelegramBotClient _bot;
-        TelegramContext _context;
+        public ITelegramBotClient Bot { get; }
+        public TelegramContext DbContext { get; }
+
         public BotHelper(ITelegramBotClient bot, TelegramContext context)
         {
-            _bot = bot;
-            _context = context;
+            Bot = bot;
+            DbContext = context;
         }
 
-        public async Task OnStartPrivateChat(long chatId)
+        public async Task<global::Telegram.Bot.Types.Message> OnStartPrivateChat(long chatId)
         {
-            if (_context.Set<Chat>().Any(x => x.Id == chatId))
-                return;
+            var savedChat = await DbContext.Set<Chat>().FindAsync(chatId);
+            if (savedChat != null)
+            {
+                var restartDate = savedChat.RestartDateTime;
+                if(restartDate.HasValue)
+                {
+                    var now = DateTime.UtcNow;
+
+                    if (now - restartDate <= new TimeSpan(0, 0, 10)) //if restart chat has 2 actions: onRestart and /start
+                        return null;
+                }
+                return await Bot.SendTextMessageAsync(chatId, "This chat is already registered");
+            }
             
-            var chat = await _bot.GetChatAsync(chatId);
+            var chat = await Bot.GetChatAsync(chatId);
 
             var dbChat = new Chat()
             {
                 Id = chat.Id,
+                CreationDateTime = DateTime.UtcNow,
                 IsGroup = false,
                 HasAdminRights = false,
                 Username = chat.Username,
@@ -47,13 +63,14 @@ namespace FlyAnytime.Telegram.Bot
                 IsRemovedFromChat = false
             };
 
-            var user = await _context.Set<User>().FindAsync(chat.Id);
+            var user = await DbContext.Set<User>().FindAsync(chat.Id);
 
             if (user == null)
             {
                 user = new User
                 {
                     Id = chat.Id,
+                    CreationDateTime = DateTime.UtcNow,
                     FirstName = chat.FirstName,
                     LastName = chat.LastName,
                     UserName = chat.Username
@@ -62,18 +79,47 @@ namespace FlyAnytime.Telegram.Bot
 
             dbChat.ChatOwner = user;
 
-            _context.Set<Chat>().Add(dbChat);
+            DbContext.Set<Chat>().Add(dbChat);
 
-            await _context.SaveChangesAsync();
+            await DbContext.SaveChangesAsync();
 
+            return await Bot.SendTextMessageAsync(chatId, "Welcome to bot!");
+
+            //TODO: send /help text after welcome
         }
+
         public async Task OnReStartPrivateChat(long chatId)
         {
+            var savedChat = await DbContext.Set<Chat>().FindAsync(chatId);
 
+            if (savedChat == null)
+            {
+                await OnStartPrivateChat(chatId);
+                return;
+            }
+
+            savedChat.IsPaused = true;
+            savedChat.IsRemovedFromChat = false;
+            savedChat.RestartDateTime = DateTime.UtcNow;
+
+
+            DbContext.Set<Chat>().Update(savedChat);
+            await DbContext.SaveChangesAsync();
+
+            await Bot.SendTextMessageAsync(chatId, $"Welcome back, {savedChat.ChatOwner.FirstName} {savedChat.ChatOwner.LastName}! Press /help to get help text ");
         }
         public async Task OnKickFromPrivateChat(long chatId)
         {
+            var savedChat = await DbContext.Set<Chat>().FindAsync(chatId);
 
+            if (savedChat == null)
+                return;
+
+            savedChat.IsPaused = true;
+            savedChat.IsRemovedFromChat = true;
+
+            DbContext.Set<Chat>().Update(savedChat);
+            await DbContext.SaveChangesAsync();
         }
 
         public async Task OnAddToGroup(long chatId)

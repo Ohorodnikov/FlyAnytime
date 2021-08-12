@@ -7,9 +7,11 @@ using Telegram.Bot.Types;
 
 namespace FlyAnytime.Telegram.Bot.Commands
 {
-    public class UnsubscribeBotCommand : BaseBotCommand
+    public class AllMyChatsBotCommand : BaseBotCommand
     {
-        public UnsubscribeBotCommand(IBotHelper bot) : base("/unsubscribe", bot) { }
+        public AllMyChatsBotCommand(IBotHelper bot) : base("/allmycahts", bot)
+        {
+        }
 
         public override Task<Message> ExecuteAsync(Message message)
         {

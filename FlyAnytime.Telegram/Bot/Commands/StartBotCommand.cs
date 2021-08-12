@@ -10,27 +10,25 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class StartBotCommand : BaseBotCommand
     {
-        IBotHelper _helper;
-        public StartBotCommand(IBotHelper helper) : base("/start") 
+        public StartBotCommand(IBotHelper helper) : base("/start", helper) 
         {
-            _helper = helper;
         }
 
-        public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
+        public override async Task<Message> ExecuteAsync(Message message)
         {
             if (message.Chat.Type == ChatType.Private)
             {
-                await _helper.OnStartPrivateChat(message.Chat.Id);
+               return await BotHelper.OnStartPrivateChat(message.Chat.Id);
             }
 
-            if (message.Chat.Type != ChatType.Private)
-            {
-                var chatId = message.Chat.Id;
-                var admins = await bot.GetChatAdministratorsAsync(chatId);
-                var creator = admins.FirstOrDefault(x => x.Status == ChatMemberStatus.Creator);
-            }
+            //if (message.Chat.Type != ChatType.Private)
+            //{
+            //    var chatId = message.Chat.Id;
+            //    var admins = await Bot.GetChatAdministratorsAsync(chatId);
+            //    var creator = admins.FirstOrDefault(x => x.Status == ChatMemberStatus.Creator);
+            //}
 
-            return await bot.SendTextMessageAsync(message.Chat.Id, "Registered");
+            return await Bot.SendTextMessageAsync(message.Chat.Id, "Registered");
         }
     }
 }

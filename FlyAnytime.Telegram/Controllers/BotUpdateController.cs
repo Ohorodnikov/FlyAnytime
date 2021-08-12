@@ -11,15 +11,6 @@ namespace FlyAnytime.Telegram.Controllers
 {
     public class BotUpdateController : ControllerBase
     {
-        //BotClient _client;
-        //IServiceProvider _serviceProvider;
-        //public BotUpdateController(ITelegramBotClient bot, IServiceProvider serviceProvider)
-        //{
-        //    //_serviceProvider = serviceProvider;
-        //    //_client = new BotClient(bot);
-        //}
-
-        //[Route("/bot")]
         [HttpPost]
         public async Task<IActionResult> GetBotUpdate([FromServices] BotClient client, [FromBody] Update update)
         {

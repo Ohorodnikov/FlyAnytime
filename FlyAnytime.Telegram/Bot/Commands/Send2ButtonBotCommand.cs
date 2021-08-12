@@ -11,9 +11,9 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class Send2ButtonBotCommand : BaseBotCommand
     {
-        public Send2ButtonBotCommand() : base("/loginBtn") { }
+        public Send2ButtonBotCommand(IBotHelper bot) : base("/loginBtn", bot) { }
 
-        public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
+        public override async Task<Message> ExecuteAsync(Message message)
         {
             var inlineKeyboard = new InlineKeyboardMarkup(new InlineKeyboardButton[]
                     {
@@ -21,7 +21,7 @@ namespace FlyAnytime.Telegram.Bot.Commands
                         new LoginDeclineButton(),
                     });
 
-            var res = await bot.SendTextMessageAsync(chatId: message.Chat.Id,
+            var res = await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
                                                   text: "Choose",
                                                   replyMarkup: inlineKeyboard);
 

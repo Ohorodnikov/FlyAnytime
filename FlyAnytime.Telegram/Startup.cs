@@ -59,7 +59,7 @@ namespace FlyAnytime.Telegram
             services.AddAllGenericImplementations(typeof(IEntityMap<>), services.AddScoped);
 
             string connection = Configuration.GetConnectionString("DefaultConnection");
-            services.AddDbContext<EF.TelegramContext>(opt => opt.UseSqlServer(connection));
+            services.AddDbContext<TelegramContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(connection));
 
             services.AddTransient<BotClient, BotClient>();
             services.AddTransient<IBotHelper, BotHelper>();

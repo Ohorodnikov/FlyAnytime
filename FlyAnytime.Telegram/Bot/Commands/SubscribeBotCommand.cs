@@ -9,9 +9,9 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class SubscribeBotCommand : BaseBotCommand
     {
-        public SubscribeBotCommand() : base("/subscribe") { }
+        public SubscribeBotCommand(IBotHelper bot) : base("/subscribe", bot) { }
 
-        public override Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
+        public override Task<Message> ExecuteAsync(Message message)
         {
             throw new NotImplementedException();
         }

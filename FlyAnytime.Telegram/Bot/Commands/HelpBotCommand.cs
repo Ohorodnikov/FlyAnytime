@@ -9,11 +9,11 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class HelpBotCommand : BaseBotCommand
     {
-        public HelpBotCommand() : base("/help") { }
+        public HelpBotCommand(IBotHelper bot) : base("/help", bot) { }
 
-        public override async Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
+        public override async Task<Message> ExecuteAsync(Message message)
         {
-            return await bot.SendTextMessageAsync(message.Chat.Id, "Help");
+            return await Bot.SendTextMessageAsync(message.Chat.Id, "Help");
         }
     }
 }

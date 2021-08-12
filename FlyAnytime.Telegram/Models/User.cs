@@ -14,13 +14,13 @@ namespace FlyAnytime.Telegram.Models
         public virtual string FirstName { get; set; }
         public virtual string LastName { get; set; }
         public virtual string UserName { get; set; }
+
+        public virtual DateTime CreationDateTime { get; set; }
     }
 
     public class UserMapping : EntityMap<User>
     {
-        public UserMapping() : base("User")
-        {
-        }
+        public UserMapping() : base("User") { }
 
         public override void SetMapping(EntityTypeBuilder<User> mapBuilder)
         {
@@ -28,6 +28,8 @@ namespace FlyAnytime.Telegram.Models
                         .Property(x => x.Id)
                         .IsRequired(true)
                         .ValueGeneratedNever();
+
+            mapBuilder.Property(x => x.CreationDateTime).IsRequired(true);
         }
     }
 }

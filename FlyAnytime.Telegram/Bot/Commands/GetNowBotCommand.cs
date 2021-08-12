@@ -9,9 +9,9 @@ namespace FlyAnytime.Telegram.Bot.Commands
 {
     public class GetNowBotCommand : BaseBotCommand
     {
-        public GetNowBotCommand() : base("/getnow") { }
+        public GetNowBotCommand(IBotHelper bot) : base("/getnow", bot) { }
 
-        public override Task<Message> ExecuteAsync(ITelegramBotClient bot, Message message)
+        public override Task<Message> ExecuteAsync(Message message)
         {
             throw new NotImplementedException();
         }
