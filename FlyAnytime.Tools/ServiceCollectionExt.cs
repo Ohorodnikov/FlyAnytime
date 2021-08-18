@@ -1,4 +1,7 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using FlyAnytime.Core.JWT;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -9,6 +12,33 @@ namespace FlyAnytime.Tools
 {
     public static class ServiceCollectionExt
     {
+        public static IServiceCollection SetCommonJwtSettings(this IServiceCollection services)
+        {
+            services
+               .AddAuthentication(options =>
+               {
+                   options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                   options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+               })
+                .AddJwtBearer(cfg =>
+                {
+                    cfg.RequireHttpsMetadata = true;
+                    cfg.SaveToken = true;
+                    cfg.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        IssuerSigningKey = JwtOptions.GetSymmetricSecurityKey(),
+                        ValidateAudience = false,
+                        ValidateIssuer = false,
+                        ValidateLifetime = false,
+                        RequireExpirationTime = false,
+                        ClockSkew = TimeSpan.Zero,
+                        ValidateIssuerSigningKey = true
+                    };
+                });
+
+            return services;
+        }
+
         private static List<Type> allTypes;
         public static IEnumerable<Type> GetAllTypes()
         {

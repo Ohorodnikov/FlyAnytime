@@ -1,4 +1,5 @@
-﻿using FlyAnytime.Telegram.Models;
+﻿using FlyAnytime.Core.EfContextBase;
+using FlyAnytime.Telegram.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -8,39 +9,10 @@ using System.Threading.Tasks;
 
 namespace FlyAnytime.Telegram.EF
 {
-    public class TelegramContext : DbContext
+    public class TelegramContext : BaseEfContext<TelegramContext>
     {
-        IServiceProvider _serviceProvider;
-
-        private static bool _firstRun = true;
-
-        public TelegramContext(DbContextOptions<TelegramContext> options, IServiceProvider serviceProvider) : base(options)
+        public TelegramContext(DbContextOptions<TelegramContext> options, IServiceProvider serviceProvider) : base(options, serviceProvider)
         {
-            _serviceProvider = serviceProvider;
-
-            if (_firstRun)
-                Database.EnsureDeleted();
-
-            _firstRun = false;
-            Database.EnsureCreated();
-        }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            var entities = _serviceProvider.GetServices<IEntity>();
-
-            foreach (var ent in entities)
-            {
-                var mapType = typeof(IEntityMap<>).MakeGenericType(ent.GetType());
-                var map = (IEntityMap)_serviceProvider.GetService(mapType);
-
-                if (!map.IsMapped())
-                    continue;
-
-                map.DoMap(modelBuilder);
-            }
-
-            base.OnModelCreating(modelBuilder);
         }
     }
 }

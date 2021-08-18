@@ -1,4 +1,6 @@
-﻿using FlyAnytime.Telegram.EF;
+﻿using FlyAnytime.Core.EfContextBase;
+using FlyAnytime.Core.Entity;
+using FlyAnytime.Telegram.EF;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 
