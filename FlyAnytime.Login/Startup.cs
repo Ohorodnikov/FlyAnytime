@@ -38,7 +38,6 @@ namespace FlyAnytime.Login
             {
                 app.UseDeveloperExceptionPage();
             }
-
             
 
             app.UseHttpsRedirection();

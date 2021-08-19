@@ -1,4 +1,5 @@
 ﻿using FlyAnytime.Messaging;
+using FlyAnytime.Messaging.Channels;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,21 @@ namespace FlyAnytime.Telegram.Bot.Commands
 
         public override async Task<Message> ExecuteAsync(Message message)
         {
-            var loginUrl = await Publish.FireAndGetResult("getLoginUrl", message.Chat.Id.ToString());
+            var userId = message.Chat.Id;
 
-            return await Bot.SendTextMessageAsync(message.Chat.Id, loginUrl);
+            var channelData = new GetLoginLinkChannelData
+            {
+                UserId = userId
+            };
+
+            var descriptor = new GetLoginLinkChannel
+            {
+                Data = channelData
+            };
+
+            var loginUrl = await Publish.FireAndGetResult(descriptor);
+
+            return await Bot.SendTextMessageAsync(message.Chat.Id, loginUrl.Url);
         }
     }
 }

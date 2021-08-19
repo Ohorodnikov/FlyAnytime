@@ -18,29 +18,31 @@ namespace FlyAnytime.Messaging
             var channel = Connection.CreateChannel();
             channel.QueueDeclare(channelDescriptor.ChannelName, true, false, false, null);
 
-            var body = Encoding.UTF8.GetBytes(channelDescriptor.GetStringData());
+            var body = Encoding.UTF8.GetBytes(channelDescriptor.Data2String());
 
             channel.BasicPublish("", channelDescriptor.ChannelName, true, null, body);
         }
 
-        public static async Task<string> FireAndGetResult<TChannelData>(IChannelDescriptor<TChannelData> channelDescriptor)
+        public static async Task<TResultData> FireAndGetResult<TChannelData, TResultData>(IChannelWithResultDescriptor<TChannelData, TResultData> channelDescriptor)
             where TChannelData : IChannelData
+            where TResultData : IChannelData
         {
             channelDescriptor.Data.GenerateMessageId();
             var chat = channelDescriptor.ChannelName;
 
-            var callbackMapper = new ConcurrentDictionary<string, TaskCompletionSource<string>>();
+            var callbackMapper = new ConcurrentDictionary<string, TaskCompletionSource<TResultData>>();
 
             var channel = Connection.CreateChannel();
             var replyQueueName = channel.QueueDeclare("", true, false, false, null).QueueName;
             var consumer = new EventingBasicConsumer(channel);
             consumer.Received += (model, ea) =>
             {
-                if (!callbackMapper.TryRemove(ea.BasicProperties.CorrelationId, out TaskCompletionSource<string> tcs))
+                if (!callbackMapper.TryRemove(ea.BasicProperties.CorrelationId, out TaskCompletionSource<TResultData> tcs))
                     return;
                 var body = ea.Body.ToArray();
                 var response = Encoding.UTF8.GetString(body);
-                tcs.TrySetResult(response);
+
+                tcs.TrySetResult(channelDescriptor.ResultString2Data(response));
             };
 
             channel.BasicConsume(
@@ -57,8 +59,8 @@ namespace FlyAnytime.Messaging
             var correlationId = Guid.NewGuid().ToString();
             props.CorrelationId = correlationId;
             props.ReplyTo = replyQueueName;
-            var messageBytes = Encoding.UTF8.GetBytes(channelDescriptor.GetStringData());
-            var tcs = new TaskCompletionSource<string>();
+            var messageBytes = Encoding.UTF8.GetBytes(channelDescriptor.Data2String());
+            var tcs = new TaskCompletionSource<TResultData>();
             callbackMapper.TryAdd(correlationId, tcs);
 
             channel.BasicPublish(
