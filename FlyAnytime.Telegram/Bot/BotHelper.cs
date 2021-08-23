@@ -1,4 +1,5 @@
-﻿using FlyAnytime.Telegram.EF;
+﻿using FlyAnytime.Messaging;
+using FlyAnytime.Telegram.EF;
 using FlyAnytime.Telegram.Models;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,7 @@ namespace FlyAnytime.Telegram.Bot
     {
         ITelegramBotClient Bot { get; }
         TelegramContext DbContext { get; }
+        IMessageBus MessageBus { get; }
 
         Task<global::Telegram.Bot.Types.Message> OnStartPrivateChat(long chatId);
         Task OnReStartPrivateChat(long chatId);
@@ -26,11 +28,13 @@ namespace FlyAnytime.Telegram.Bot
     {
         public ITelegramBotClient Bot { get; }
         public TelegramContext DbContext { get; }
+        public IMessageBus MessageBus { get; }
 
-        public BotHelper(ITelegramBotClient bot, TelegramContext context)
+        public BotHelper(ITelegramBotClient bot, TelegramContext context, IMessageBus messageBus)
         {
             Bot = bot;
             DbContext = context;
+            MessageBus = messageBus;
         }
 
         public async Task<global::Telegram.Bot.Types.Message> OnStartPrivateChat(long chatId)

@@ -1,5 +1,11 @@
+using FlyAnytime.Core.Entity;
 using FlyAnytime.Login.EF;
+using FlyAnytime.Login.Helpers;
 using FlyAnytime.Login.JWT;
+using FlyAnytime.Login.MessageHandlers;
+using FlyAnytime.Messaging;
+using FlyAnytime.Messaging.Helpers;
+using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Tools;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,6 +34,12 @@ namespace FlyAnytime.Login
             services.SetCommonJwtSettings();
 
             services.AddScoped<ITokenBuilder, TokenBuilder>();
+
+            services.AddIEntityAsBase();
+            services.AddTransient<IOclHelper, OclHelper>();
+
+            services.AddRabbitMq();
+
             services.AddControllers();
         }
 
@@ -50,6 +62,15 @@ namespace FlyAnytime.Login
             {
                 endpoints.MapControllers();
             });
+
+            SubscribeOnMessages(app);
+        }
+
+        private void SubscribeOnMessages(IApplicationBuilder app)
+        {
+            var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+
+            eventBus.Subscribe<GetLoginLinkRequestMessage, GetLoginLinkHandler, GetLoginLinkResponseMessage>();
         }
     }
 }

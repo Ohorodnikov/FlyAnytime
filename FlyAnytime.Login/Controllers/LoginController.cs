@@ -46,7 +46,7 @@ namespace FlyAnytime.Login.Controllers
 
         public async Task<IActionResult> GetJwtForOneClickLogin(string userLogin)
         {
-            var userLoginInfo = await _oclHelper.GetOneClickLogin(userLogin);
+            var userLoginInfo = await _oclHelper.FindOneClickLoginByUrl(userLogin);
 
             if (userLoginInfo == null)
                 return Json("Not valid url");

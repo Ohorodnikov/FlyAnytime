@@ -1,4 +1,5 @@
-﻿using FlyAnytime.Telegram.EF;
+﻿using FlyAnytime.Messaging;
+using FlyAnytime.Telegram.EF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace FlyAnytime.Telegram.Bot.Commands
         protected IBotHelper BotHelper { get; }
         protected ITelegramBotClient Bot => BotHelper.Bot;
         protected TelegramContext DbContext => BotHelper.DbContext;
-
+        protected IMessageBus MessageBus => BotHelper.MessageBus;
 
         public string Command { get; }
 

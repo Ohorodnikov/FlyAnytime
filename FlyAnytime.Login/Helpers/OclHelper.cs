@@ -10,7 +10,7 @@ namespace FlyAnytime.Login.Helpers
 {
     public interface IOclHelper
     {
-        Task<OneClickLogin> GetOneClickLogin(string userUrl);
+        Task<OneClickLogin> FindOneClickLoginByUrl(string userUrl);
         Task<OneClickLogin> Create(long userId, int lifetimeInSec = 300);
     }
     public class OclHelper : IOclHelper
@@ -44,7 +44,7 @@ namespace FlyAnytime.Login.Helpers
             return ocl;
         }
 
-        public async Task<OneClickLogin> GetOneClickLogin(string userUrl)
+        public async Task<OneClickLogin> FindOneClickLoginByUrl(string userUrl)
         {
             return await _dbContext.Set<OneClickLogin>()
                                     .Include(x => x.User)

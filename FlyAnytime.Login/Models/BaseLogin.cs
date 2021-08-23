@@ -8,6 +8,6 @@ namespace FlyAnytime.Login.Models
 {
     public abstract class BaseLogin : Entity<long>
     {
-        public User User { get; set; }
+        public virtual User User { get; set; }
     }
 }

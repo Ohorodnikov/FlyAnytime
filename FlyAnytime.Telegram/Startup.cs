@@ -1,5 +1,7 @@
 using FlyAnytime.Core.EfContextBase;
 using FlyAnytime.Core.Entity;
+using FlyAnytime.Messaging;
+using FlyAnytime.Messaging.Helpers;
 using FlyAnytime.Telegram.Bot;
 using FlyAnytime.Telegram.Bot.Commands;
 using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
@@ -56,9 +58,7 @@ namespace FlyAnytime.Telegram
             services.AddAllImplementations<IBotCommand>(services.AddScoped);
             services.AddAllImplementations<IInlineKeyboardButtonWithAction>(services.AddScoped);
 
-            services.AddAllImplementations<IEntity>(services.AddTransient);
-
-            services.AddAllGenericImplementations(typeof(IEntityMap<>), services.AddScoped);
+            services.AddIEntityAsBase();
 
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<TelegramContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(connection));
@@ -66,6 +66,7 @@ namespace FlyAnytime.Telegram
             services.AddTransient<BotClient, BotClient>();
             services.AddTransient<IBotHelper, BotHelper>();
 
+            services.AddRabbitMq();
 
             services.AddControllers()
                 .AddNewtonsoftJson()
