@@ -1,9 +1,7 @@
-﻿using FlyAnytime.Login.EF;
-using FlyAnytime.Login.Helpers;
+﻿using FlyAnytime.Login.Helpers;
 using FlyAnytime.Messaging.Messages;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using System.Threading.Tasks;
 
 namespace FlyAnytime.Login.MessageHandlers
@@ -11,6 +9,7 @@ namespace FlyAnytime.Login.MessageHandlers
     public class GetLoginLinkHandler : IMessageHandler<GetLoginLinkRequestMessage, GetLoginLinkResponseMessage>
     {
         private IOclHelper _oclHelper;
+
         public GetLoginLinkHandler(IOclHelper oclHelper)
         {
             _oclHelper = oclHelper;
@@ -20,7 +19,9 @@ namespace FlyAnytime.Login.MessageHandlers
         {
             var ocl = await _oclHelper.Create(message.UserId);
 
-            return new GetLoginLinkResponseMessage(ocl?.LoginUrl);
+            var link = $"https://localhost:44320/jwtocl/{ocl?.LoginUrl}";
+
+            return new GetLoginLinkResponseMessage(link);
         }
     }
 }

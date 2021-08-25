@@ -165,8 +165,6 @@ namespace FlyAnytime.Messaging
 
         #region Publish
 
-        
-
         public void Publish<TMessageSend>(TMessageSend message) where TMessageSend : BaseMessage
         {
             var chatName = GetChannelKey<TMessageSend>();

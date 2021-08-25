@@ -34,7 +34,7 @@ namespace FlyAnytime.Login.Helpers
                 CreationDateTime = now,
                 ExpireDateTime = now.AddSeconds(lifetimeInSec),
                 User = user,
-                //LoginUrl = 
+                LoginUrl = Guid.NewGuid().ToString().Replace("-", "")
             };
 
             _dbContext.Set<OneClickLogin>().Add(ocl);

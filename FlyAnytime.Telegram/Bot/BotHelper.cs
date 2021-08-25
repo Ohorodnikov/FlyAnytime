@@ -1,4 +1,5 @@
 ﻿using FlyAnytime.Messaging;
+using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Telegram.EF;
 using FlyAnytime.Telegram.Models;
 using System;
@@ -69,6 +70,7 @@ namespace FlyAnytime.Telegram.Bot
 
             var user = await DbContext.Set<User>().FindAsync(chat.Id);
 
+            RegisterNewUserMessage regNewUser = null;
             if (user == null)
             {
                 user = new User
@@ -79,6 +81,8 @@ namespace FlyAnytime.Telegram.Bot
                     LastName = chat.LastName,
                     UserName = chat.Username
                 };
+
+                regNewUser = new RegisterNewUserMessage(user.Id, user.FirstName, user.LastName, user.UserName);
             }
 
             dbChat.ChatOwner = user;
@@ -86,6 +90,11 @@ namespace FlyAnytime.Telegram.Bot
             DbContext.Set<Chat>().Add(dbChat);
 
             await DbContext.SaveChangesAsync();
+
+            if (regNewUser != null)
+            {
+                MessageBus.Publish(regNewUser);
+            }
 
             return await Bot.SendTextMessageAsync(chatId, "Welcome to bot!");
 

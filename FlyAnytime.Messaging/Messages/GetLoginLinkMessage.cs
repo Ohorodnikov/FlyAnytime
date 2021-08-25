@@ -11,7 +11,7 @@ namespace FlyAnytime.Messaging.Messages
             UserId = userId;
         }
 
-        public long UserId { get; }
+        public long UserId { get; set; }
     }
     public class GetLoginLinkResponseMessage : BaseResponseMessage<GetLoginLinkRequestMessage>
     {
@@ -24,7 +24,7 @@ namespace FlyAnytime.Messaging.Messages
                 ErrorMessage = "User was not found";
         }
 
-        public string LoginUrl { get; }
+        public string LoginUrl { get; set; }
     }
 
 }

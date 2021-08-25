@@ -44,6 +44,7 @@ namespace FlyAnytime.Login.Controllers
             return Json(new SuccessDataModel(true, ocl));
         }
 
+        [Route("jwtocl/{userLogin}")]
         public async Task<IActionResult> GetJwtForOneClickLogin(string userLogin)
         {
             var userLoginInfo = await _oclHelper.FindOneClickLoginByUrl(userLogin);

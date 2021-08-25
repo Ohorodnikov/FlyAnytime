@@ -18,8 +18,8 @@ namespace FlyAnytime.Core.EfContextBase
         {
             _serviceProvider = serviceProvider;
 
-            if (_firstRun)
-                Database.EnsureDeleted();
+            //if (_firstRun)
+            //    Database.EnsureDeleted();
 
             _firstRun = false;
             Database.EnsureCreated();

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FlyAnytime.Telegram.Bot.Commands
 {
@@ -24,7 +25,25 @@ namespace FlyAnytime.Telegram.Bot.Commands
 
             var loginUrl = await MessageBus.Publish<GetLoginLinkRequestMessage, GetLoginLinkResponseMessage>(m);
 
-            return await Bot.SendTextMessageAsync(message.Chat.Id, loginUrl.LoginUrl ?? loginUrl.ErrorMessage);
+            var loginU = new LoginUrl
+            {
+                Url = loginUrl.LoginUrl
+            };
+
+            var inlineKeyboard = new InlineKeyboardMarkup(new InlineKeyboardButton[]
+                    {
+                        InlineKeyboardButton.WithUrl("Open",
+                        //"https://localhost:44320/g/11")
+                        loginUrl.LoginUrl)
+                    });
+
+            //var res = await Bot.SendTextMessageAsync(chatId: message.Chat.Id,
+            //                                      text: "Press button to open",
+            //                                      replyMarkup: inlineKeyboard);
+
+            //return res;
+
+            return await Bot.SendTextMessageAsync(message.Chat.Id, $"[Click here to open]({loginUrl.LoginUrl})");// loginUrl.LoginUrl ?? loginUrl.ErrorMessage);
         }
     }
 }
