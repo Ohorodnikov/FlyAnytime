@@ -2,6 +2,7 @@
 using FlyAnytime.Login.Helpers;
 using FlyAnytime.Login.JWT;
 using FlyAnytime.Login.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -11,6 +12,8 @@ using System.Threading.Tasks;
 
 namespace FlyAnytime.Login.Controllers
 {
+    [ApiController]
+    [Route("[controller]/[action]")]
     public class LoginController : Controller
     {
         LoginContext _dbContext;
@@ -32,6 +35,13 @@ namespace FlyAnytime.Login.Controllers
             }
             public bool Success { get; set; }
             public object Data { get; set; }
+        }
+
+        [Authorize]
+        public async Task<IActionResult> CheckJwtToken()
+        {
+            return Json(new { jwtStatus = true });
+            return Ok();
         }
 
         public async Task<IActionResult> GenerateOclLink(long userId)

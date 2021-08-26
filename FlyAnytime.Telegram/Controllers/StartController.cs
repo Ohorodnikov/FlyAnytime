@@ -11,7 +11,7 @@ namespace FlyAnytime.Telegram.Controllers
         [Route("start")]
         public IActionResult Index()
         {
-            return Json("started");
+            return Json("started tg");
         }
     }
 }

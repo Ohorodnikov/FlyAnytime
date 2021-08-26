@@ -3,8 +3,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:38397",
-      "sslPort": 8443
+      "applicationUrl": "http://localhost:52227",
+      "sslPort": 44378
     }
   },
   "$schema": "http://json.schemastore.org/launchsettings.json",
@@ -12,27 +12,25 @@
     "IIS Express": {
       "commandName": "IISExpress",
       "launchBrowser": true,
-      "launchUrl": "start",
+      "launchUrl": "weatherforecast",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "FlyAnytime.Telegram": {
+    "FlyAnytime.ApiGateway": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "start",
+      //"launchUrl": "weatherforecast",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:443;http://localhost:5033"
+      "applicationUrl": "https://localhost:5001;http://localhost:5011"
     },
     "Docker": {
       "commandName": "Docker",
       "launchBrowser": true,
-      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/start",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
       "publishAllPorts": true,
-      "httpPort": 5001,
-      "sslPort": 443,
       "useSSL": true
     }
   }

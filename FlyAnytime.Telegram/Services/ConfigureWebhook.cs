@@ -16,7 +16,7 @@ namespace FlyAnytime.Telegram.Services
         private readonly ILogger<ConfigureWebhook> _logger;
         private readonly IServiceProvider _services;
         private readonly BotConfiguration _botConfig;
-
+        private readonly string GatewayUrl;
         public ConfigureWebhook(ILogger<ConfigureWebhook> logger,
                                 IServiceProvider serviceProvider,
                                 IConfiguration configuration)
@@ -24,6 +24,7 @@ namespace FlyAnytime.Telegram.Services
             _logger = logger;
             _services = serviceProvider;
             _botConfig = configuration.GetSection("BotConfiguration").Get<BotConfiguration>();
+            GatewayUrl = configuration.GetSection("GatewayUrl").Value;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
@@ -36,7 +37,8 @@ namespace FlyAnytime.Telegram.Services
             // If you'd like to make sure that the Webhook request comes from Telegram, we recommend
             // using a secret path in the URL, e.g. https://www.example.com/<token>.
             // Since nobody else knows your bot's token, you can be pretty sure it's us.
-            var webhookAddress = @$"{_botConfig.HostAddress}/bot/{_botConfig.BotToken}";
+            //var webhookAddress = @$"{_botConfig.HostAddress}/bot/{_botConfig.BotToken}";
+            var webhookAddress = @$"{GatewayUrl}/tg/bot/{_botConfig.BotToken}";
             _logger.LogInformation("Setting webhook: ", webhookAddress);
             await botClient.SetWebhookAsync(
                 url: webhookAddress,
