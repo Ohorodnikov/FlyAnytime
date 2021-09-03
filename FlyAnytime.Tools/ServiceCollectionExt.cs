@@ -17,7 +17,7 @@ namespace FlyAnytime.Tools
         public static IServiceCollection AddIEntityAsBase(this IServiceCollection services)
         {
             services.AddAllImplementations<IEntity>(services.AddTransient);
-            services.AddAllGenericImplementations(typeof(IEntityMap<>), services.AddScoped);
+            services.AddAllGenericImplementations(typeof(IEntityMap<,>), services.AddScoped);
 
             return services;
         }

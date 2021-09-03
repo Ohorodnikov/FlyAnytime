@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Text;
 
 namespace FlyAnytime.Core.EfContextBase
@@ -18,8 +19,8 @@ namespace FlyAnytime.Core.EfContextBase
         {
             _serviceProvider = serviceProvider;
 
-            //if (_firstRun)
-            //    Database.EnsureDeleted();
+            if (_firstRun)
+                Database.EnsureDeleted();
 
             _firstRun = false;
             Database.EnsureCreated();
@@ -31,7 +32,7 @@ namespace FlyAnytime.Core.EfContextBase
 
             foreach (var ent in entities)
             {
-                var mapType = typeof(IEntityMap<>).MakeGenericType(ent.GetType());
+                var mapType = typeof(IEntityMap<,>).MakeGenericType(ent.GetType(), ent.GetType().GetProperty(nameof(IEntity.Id), BindingFlags.Instance | BindingFlags.Public).PropertyType);
                 var map = (IEntityMap)_serviceProvider.GetService(mapType);
 
                 if (!map.IsMapped())

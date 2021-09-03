@@ -8,7 +8,11 @@ namespace FlyAnytime.Core.Entity
     {
         object Id { get; set; }
     }
-    public class Entity<TId> : IEntity
+    public interface IEntity<TId> : IEntity
+    {
+        new TId Id { get; set; }
+    }
+    public class Entity<TId> : IEntity<TId>
     {
         public virtual TId Id { get; set; }
         object IEntity.Id { get => Id; set => Id = (TId)value; }

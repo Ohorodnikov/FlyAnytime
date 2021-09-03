@@ -1,5 +1,6 @@
 ﻿using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Messages;
+using FlyAnytime.Telegram.Bot.Conversations;
 using FlyAnytime.Telegram.EF;
 using FlyAnytime.Telegram.Models;
 using System;
@@ -89,6 +90,19 @@ namespace FlyAnytime.Telegram.Bot
 
             DbContext.Set<Chat>().Add(dbChat);
 
+
+            var chatSettings = new ChatSettings
+            {
+                Chat = dbChat,
+                UserLanguage = DbContext.Set<Language>().First(),
+                SearchSettings = new ChatSearchSettingsBase
+                {
+                    Chat = dbChat
+                }
+            };
+
+            DbContext.Add(chatSettings);
+
             await DbContext.SaveChangesAsync();
 
             if (regNewUser != null)
@@ -96,9 +110,11 @@ namespace FlyAnytime.Telegram.Bot
                 MessageBus.Publish(regNewUser);
             }
 
-            return await Bot.SendTextMessageAsync(chatId, "Welcome to bot!");
+            await Bot.SendTextMessageAsync(chatId, "Welcome to bot!");
 
             //TODO: send /help text after welcome
+
+            return await new UpdateSettingsConversation(this).Start(chatId);
         }
 
         public async Task OnReStartPrivateChat(long chatId)

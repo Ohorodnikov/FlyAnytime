@@ -13,7 +13,7 @@ namespace FlyAnytime.Login.Models
         public virtual DateTime ExpireDateTime { get; set; }
     }
 
-    public abstract class LoginWithLimitedTimeMapping<TLoginModel> : EntityMap<TLoginModel>
+    public abstract class LoginWithLimitedTimeMapping<TLoginModel> : EntityMap<TLoginModel, long>
         where TLoginModel : LoginWithLimitedTime
     {
         public LoginWithLimitedTimeMapping(string tableName) : base(tableName) { }

@@ -38,7 +38,7 @@ namespace FlyAnytime.Telegram.Services
             // using a secret path in the URL, e.g. https://www.example.com/<token>.
             // Since nobody else knows your bot's token, you can be pretty sure it's us.
             //var webhookAddress = @$"{_botConfig.HostAddress}/bot/{_botConfig.BotToken}";
-            var webhookAddress = @$"{GatewayUrl}/tg/bot/{_botConfig.BotToken}";
+            var webhookAddress = @$"{GatewayUrl}/tgbot/bot/{_botConfig.BotToken}";
             _logger.LogInformation("Setting webhook: ", webhookAddress);
             await botClient.SetWebhookAsync(
                 url: webhookAddress,

@@ -12,13 +12,13 @@ namespace FlyAnytime.Core.EfContextBase
         void DoMap(ModelBuilder modelBuilder);
         bool IsMapped();
     }
-    public interface IEntityMap<TEntity> : IEntityMap
-        where TEntity : class, IEntity
+    public interface IEntityMap<TEntity, TId> : IEntityMap
+        where TEntity : class, IEntity<TId>
     {
         void SetMapping(EntityTypeBuilder<TEntity> mapBuilder);
     }
-    public abstract class EntityMap<TEntity> : IEntityMap<TEntity>
-        where TEntity : class, IEntity
+    public abstract class EntityMap<TEntity, TId> : IEntityMap<TEntity, TId>
+        where TEntity : class, IEntity<TId>
     {
         protected string TableName { get; }
         public EntityMap(string tableName)

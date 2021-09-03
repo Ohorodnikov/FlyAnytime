@@ -20,7 +20,7 @@ namespace FlyAnytime.Telegram.Models
         public virtual DateTime CreationDateTime { get; set; }
     }
 
-    public class UserMapping : EntityMap<User>
+    public class UserMapping : EntityMap<User, long>
     {
         public UserMapping() : base("User") { }
 

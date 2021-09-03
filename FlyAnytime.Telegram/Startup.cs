@@ -4,6 +4,7 @@ using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
 using FlyAnytime.Telegram.Bot;
 using FlyAnytime.Telegram.Bot.Commands;
+using FlyAnytime.Telegram.Bot.Conversations;
 using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
 using FlyAnytime.Telegram.EF;
 using FlyAnytime.Telegram.Models;
@@ -57,6 +58,7 @@ namespace FlyAnytime.Telegram
 
             services.AddAllImplementations<IBotCommand>(services.AddScoped);
             services.AddAllImplementations<IInlineKeyboardButtonWithAction>(services.AddScoped);
+            services.AddAllImplementations<IConversation>(services.AddScoped);
 
             services.AddIEntityAsBase();
 

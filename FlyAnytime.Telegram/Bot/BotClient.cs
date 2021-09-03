@@ -1,6 +1,8 @@
 ﻿using FlyAnytime.Telegram.Bot.Commands;
+using FlyAnytime.Telegram.Bot.Conversations;
 using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
 using FlyAnytime.Telegram.EF;
+using FlyAnytime.Telegram.Models;
 using FlyAnytime.Tools;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -84,7 +86,13 @@ namespace FlyAnytime.Telegram.Bot
                 return;
             }
 
-            var allCommands = _serviceProvider.GetServices<IBotCommand>();
+            if (await TryProcessConversation(message.Chat.Id, message))
+                return;
+
+            var allCommands = _serviceProvider.GetServices<IBotCommand>().ToList();
+            var unrecCmd = allCommands.Find(x => x.GetType() == typeof(UnrecognizedBotCommand));
+
+            allCommands.Remove(unrecCmd);
             var messageCommand = message.Text.Split(" ")[0];
             foreach (var cmd in allCommands)
             {
@@ -94,6 +102,29 @@ namespace FlyAnytime.Telegram.Bot
                     return;
                 }
             }
+
+            await unrecCmd.ExecuteAsync(message);
+        }
+
+        private async Task<bool> TryProcessConversation(long chatId, object response)
+        {
+            var lastConversationMessage = _botHelper.DbContext.Set<ChatConversation>()
+                .Where(x => x.Chat.Id == chatId)
+                .OrderByDescending(x => x.CreationDateTime)
+                .FirstOrDefault();
+
+            if (lastConversationMessage?.WaitAnswer != true)
+                return false;
+
+            var allConversations = _serviceProvider.GetServices<IConversation>();
+
+            var currentConversation = allConversations.FirstOrDefault(x => x.ConversationId == lastConversationMessage.ConversationId);
+
+            if (currentConversation == null)
+                return false;
+
+            await currentConversation.ProcessUserAnswer(chatId, response);
+            return true;
         }
 
         private async Task ChatMembersAdded(Message message)
@@ -165,14 +196,16 @@ namespace FlyAnytime.Telegram.Bot
 
         }
 
-        private async Task OnPoll(Poll poll)
+        private async Task OnPoll(global::Telegram.Bot.Types.Poll poll)
         {
 
         }
 
         private async Task OnPollAnswer(PollAnswer pollAnswer)
         {
-
+            var chatId = _botHelper.DbContext.Set<Models.Poll>().Find(pollAnswer.PollId).Chat.Id;
+            if (await TryProcessConversation(chatId, pollAnswer))
+                return;
         }
 
         private async Task OnMyChatMember(ChatMemberUpdated cmu)

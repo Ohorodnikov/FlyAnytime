@@ -20,7 +20,7 @@ namespace FlyAnytime.Telegram.Models
         public virtual DateTime? RestartDateTime { get; set; }
     }
 
-    public class ChatMapping : EntityMap<Chat>
+    public class ChatMapping : EntityMap<Chat, long>
     {
         public ChatMapping() : base("Chat") { }
 
