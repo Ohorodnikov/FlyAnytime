@@ -1,3 +1,4 @@
+using FlyAnytime.Core;
 using FlyAnytime.Core.EfContextBase;
 using FlyAnytime.Core.Entity;
 using FlyAnytime.Messaging;
@@ -44,7 +45,7 @@ namespace FlyAnytime.Telegram
             // There are several strategies for completing asynchronous tasks during startup.
             // Some of them could be found in this article https://andrewlock.net/running-async-tasks-on-app-startup-in-asp-net-core-part-1/
             // We are going to use IHostedService to add and later remove Webhook
-            services.AddHostedService<ConfigureWebhook>();
+            services.AddSingleton<TgWebhook>();
 
             // Register named HttpClient to get benefits of IHttpClientFactory
             // and consume it with ITelegramBotClient typed client.
@@ -56,6 +57,7 @@ namespace FlyAnytime.Telegram
                         => new TelegramBotClient(BotConfig.BotToken, httpClient));
 
 
+            services.AddLazy<ICommonSettings, CommonSettings>(services.AddSingleton);
             services.AddAllImplementations<IBotCommand>(services.AddScoped);
             services.AddAllImplementations<IInlineKeyboardButtonWithAction>(services.AddScoped);
             services.AddAllImplementations<IConversation>(services.AddScoped);

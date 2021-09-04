@@ -14,6 +14,13 @@ namespace FlyAnytime.Tools
 {
     public static class ServiceCollectionExt
     {
+        public static IServiceCollection AddLazy<TService, TImplementation>(this IServiceCollection services, Func<Type, Type, IServiceCollection> registration)
+        {
+            registration(typeof(TService), typeof(TImplementation));
+            services.AddTransient(provider => new Lazy<TService>(() => provider.GetRequiredService<TService>()));
+
+            return services;
+        }
         public static IServiceCollection AddIEntityAsBase(this IServiceCollection services)
         {
             services.AddAllImplementations<IEntity>(services.AddTransient);

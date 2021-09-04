@@ -27,6 +27,7 @@ namespace FlyAnytime.ApiGateway
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IRouteHelper, RouteHelper>();
+            services.AddControllers();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -36,6 +37,12 @@ namespace FlyAnytime.ApiGateway
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
 
             var helper = app.ApplicationServices.GetService<IRouteHelper>();
             app.Run(helper.RouteRequest);

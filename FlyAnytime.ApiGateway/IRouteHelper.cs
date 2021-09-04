@@ -132,6 +132,7 @@ namespace FlyAnytime.ApiGateway
                 {
                     newRequest.Headers.Add("Authorization", res.ToList());
                 }
+                newRequest.Headers.Add("GatewayUrl", $"https://{request.Host.Value}");
                 return await client.SendAsync(newRequest);
             }
         }

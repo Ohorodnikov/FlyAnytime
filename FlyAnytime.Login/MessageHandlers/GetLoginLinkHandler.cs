@@ -1,4 +1,5 @@
-﻿using FlyAnytime.Login.Helpers;
+﻿using FlyAnytime.Core;
+using FlyAnytime.Login.Helpers;
 using FlyAnytime.Messaging.Messages;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -11,10 +12,10 @@ namespace FlyAnytime.Login.MessageHandlers
     {
         private IOclHelper _oclHelper;
         private string GatewayUrl;
-        public GetLoginLinkHandler(IOclHelper oclHelper, IConfiguration configuration)
+        public GetLoginLinkHandler(IOclHelper oclHelper, ICommonSettings configuration)
         {
             _oclHelper = oclHelper;
-            GatewayUrl = configuration.GetSection("GatewayUrl").Value;
+            GatewayUrl = configuration.ApiGatewayUrl;
         }
 
         public async Task<GetLoginLinkResponseMessage> Handle(GetLoginLinkRequestMessage message)

@@ -1,3 +1,4 @@
+using FlyAnytime.Core;
 using FlyAnytime.Core.Entity;
 using FlyAnytime.Login.EF;
 using FlyAnytime.Login.Helpers;
@@ -13,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace FlyAnytime.Login
 {
@@ -31,6 +33,7 @@ namespace FlyAnytime.Login
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<LoginContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(connection));
 
+            services.AddLazy<ICommonSettings, CommonSettings>(services.AddSingleton);
             services.SetCommonJwtSettings();
 
             services.AddScoped<ITokenBuilder, TokenBuilder>();

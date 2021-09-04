@@ -20,7 +20,7 @@
     "FlyAnytime.ApiGateway": {
       "commandName": "Project",
       "launchBrowser": true,
-      //"launchUrl": "weatherforecast",
+      "launchUrl": "start",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
