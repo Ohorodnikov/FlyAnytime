@@ -8,11 +8,12 @@ using System.Threading.Tasks;
 
 namespace FlyAnytime.Telegram.Models
 {
-    public class SearchCity : Entity<long>
+    public class SearchCity : Entity<long>, IEntityWithLocalization
     {
         public virtual string Code { get; set; }
         public virtual string Name { get; set; }
 
+        public string TypeDescriptor => "SearchCountry";
         public virtual SearchCountry Country { get; set; }
     }
 

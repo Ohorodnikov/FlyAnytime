@@ -3,11 +3,14 @@ using FlyAnytime.Core.EfContextBase;
 using FlyAnytime.Core.Entity;
 using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
+using FlyAnytime.Messaging.Messages;
+using FlyAnytime.Messaging.Messages.SearchSettings;
 using FlyAnytime.Telegram.Bot;
 using FlyAnytime.Telegram.Bot.Commands;
 using FlyAnytime.Telegram.Bot.Conversations;
 using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
 using FlyAnytime.Telegram.EF;
+using FlyAnytime.Telegram.MessageHandlers;
 using FlyAnytime.Telegram.Models;
 using FlyAnytime.Telegram.Services;
 using FlyAnytime.Tools;
@@ -70,6 +73,8 @@ namespace FlyAnytime.Telegram
             services.AddTransient<BotClient, BotClient>();
             services.AddTransient<IBotHelper, BotHelper>();
 
+            services.AddTransient<ILocalizationHelper, LocalizationHelper>();
+
             services.AddRabbitMq();
 
             services.AddControllers()
@@ -100,6 +105,19 @@ namespace FlyAnytime.Telegram
 
                 endpoints.MapControllers();
             });
+
+            SubscribeOnMessages(app);
+        }
+
+        private void SubscribeOnMessages(IApplicationBuilder app)
+        {
+            var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+
+            eventBus.Subscribe<AddNewLanguageMessage, AddNewLanguageHandler>();
+            eventBus.Subscribe<AddOrUpdateCityMessage, AddOrUpdateCityHandler>();
+            eventBus.Subscribe<AddOrUpdateCountryMessage, AddOrUpdateCountryHandler>();
+            eventBus.Subscribe<DeleteCityMessage, DeleteCityHandler>();
+            eventBus.Subscribe<DeleteCountryMessage, DeleteCountryHandler>();
         }
     }
 }

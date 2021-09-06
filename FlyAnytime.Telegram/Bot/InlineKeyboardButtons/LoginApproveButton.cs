@@ -11,9 +11,9 @@ namespace FlyAnytime.Telegram.Bot.InlineKeyboardButtons
     {
         public LoginApproveButton() : base("Approve", "840FCB24-ADD2-4191-9B7D-4A000D3CBC33") { }
 
-        public override async Task OnButtonPress(ITelegramBotClient bot, Message message)
+        public override async Task OnButtonPress(IBotHelper bot, Message message)
         {
-            await InlineKeyboardButtonHelper.HideKeyboard(bot, message.Chat.Id, message.MessageId);
+            await InlineKeyboardButtonHelper.HideKeyboard(bot.Bot, message.Chat.Id, message.MessageId);
             //throw new NotImplementedException();
         }
     }

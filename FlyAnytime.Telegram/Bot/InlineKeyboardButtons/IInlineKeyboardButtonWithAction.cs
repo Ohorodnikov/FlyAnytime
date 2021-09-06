@@ -11,7 +11,7 @@ namespace FlyAnytime.Telegram.Bot.InlineKeyboardButtons
     public interface IInlineKeyboardButtonWithAction
     {
         Guid ButtonId { get; }
-        Task OnButtonPress(ITelegramBotClient bot, Message message);
+        Task OnButtonPress(IBotHelper bot, Message message);
         bool IsPressed(string buttonValue);
     }
 
@@ -31,6 +31,6 @@ namespace FlyAnytime.Telegram.Bot.InlineKeyboardButtons
             return buttonValue.Equals(CallbackData, StringComparison.InvariantCultureIgnoreCase);
         }
 
-        public abstract Task OnButtonPress(ITelegramBotClient bot, Message message);
+        public abstract Task OnButtonPress(IBotHelper bot, Message message);
     }
 }

@@ -16,7 +16,7 @@ namespace FlyAnytime.Telegram.Bot.Commands
 
         public override Task<Message> ExecuteAsync(Message message)
         {
-            return new UpdateSettingsConversation(BotHelper).Start(message.Chat.Id);
+            return new UpdateSettingsFullConversation(BotHelper).Start(message.Chat.Id);
         }
     }
 }

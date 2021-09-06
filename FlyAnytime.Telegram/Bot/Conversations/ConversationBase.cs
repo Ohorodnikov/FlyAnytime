@@ -8,34 +8,6 @@ using Chat = FlyAnytime.Telegram.Models.Chat;
 
 namespace FlyAnytime.Telegram.Bot.Conversations
 {
-    public interface IConversationStep
-    {
-        int Order { get; }
-        bool WaitAnswer { get; }
-        IConversationStep NextStep { get; }
-        Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId);
-        Task OnGetUserAnswer(IBotHelper bot, long chatId, object response);
-    }
-
-    public class EndConversationStep : IConversationStep
-    {
-        public int Order => int.MaxValue;
-
-        public bool WaitAnswer => false;
-
-        public IConversationStep NextStep => null;
-
-        public Task OnGetUserAnswer(IBotHelper bot, long chatId, object response)
-        {
-            throw new NotSupportedException();
-        }
-
-        public async Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId)
-        {
-            return null;
-        }
-    }
-
     public interface IConversation
     {
         public Guid ConversationId { get; }
@@ -49,15 +21,24 @@ namespace FlyAnytime.Telegram.Bot.Conversations
         {
             Bot = bot;
             ConversationId = conversationId;
+            _stepIniter = new ConversationStepIniter();
+            DoStepInit();
         }
+
+        private readonly IConversationStepIniter _stepIniter;
 
         public IBotHelper Bot { get; }
         public Guid ConversationId { get; }
+        public abstract void InitConversationSteps(IConversationStepIniter stepIniter);
 
-        public abstract IEnumerable<IConversationStep> GetConversationSteps();
+        private void DoStepInit()
+        {
+            InitConversationSteps(_stepIniter);
+        }
+
         public virtual async Task<Message> Start(long chatId)
         {
-            var firstStep = GetConversationSteps().OrderBy(x => x.Order).First();
+            var firstStep = _stepIniter.GetFirstStep();
 
             return await SaveAndSentStep(chatId, firstStep);
         }
@@ -68,14 +49,12 @@ namespace FlyAnytime.Telegram.Bot.Conversations
                 .Where(x => x.Chat.Id == chatId && x.ConversationId == ConversationId)
                 .OrderByDescending(x => x.CreationDateTime).First();
 
-            var prevStep = GetConversationSteps().First(x => x.Order == previousConvStepInDb.ConversationStep);
+            var prevStep = _stepIniter.GetStepById(previousConvStepInDb.ConversationStepId);
             await prevStep.OnGetUserAnswer(Bot, chatId, response);
-            var nextStep = prevStep.NextStep;
+            var nextStep = _stepIniter.GetNextStep(prevStep);
 
             if (nextStep == null)
-            {
                 return await SaveAndSentStep(chatId, new EndConversationStep());
-            }
 
             return await SaveAndSentStep(chatId, nextStep);
 
@@ -87,7 +66,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             {
                 Chat = await Bot.DbContext.Set<Chat>().FindAsync(chatId),
                 ConversationId = ConversationId,
-                ConversationStep = step.Order,
+                ConversationStepId = step.StepId,
                 WaitAnswer = step.WaitAnswer
             };
 

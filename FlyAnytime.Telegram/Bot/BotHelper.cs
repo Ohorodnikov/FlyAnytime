@@ -114,7 +114,7 @@ namespace FlyAnytime.Telegram.Bot
 
             //TODO: send /help text after welcome
 
-            return await new UpdateSettingsConversation(this).Start(chatId);
+            return await new UpdateSettingsFullConversation(this).Start(chatId);
         }
 
         public async Task OnReStartPrivateChat(long chatId)

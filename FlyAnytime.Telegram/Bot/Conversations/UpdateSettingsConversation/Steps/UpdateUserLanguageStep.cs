@@ -6,32 +6,15 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace FlyAnytime.Telegram.Bot.Conversations
+namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 {
-    public class UpdateSettingsConversation : ConversationBase
+    public class UpdateUserLanguageStep : BaseConversationStep
     {
-        static readonly Guid _id = new Guid("37F7C2D2-879D-4E3B-9136-E97DA878FFE0");
-        public UpdateSettingsConversation(IBotHelper bot) : base(bot, _id)
-        {
-        }
+        public override Guid StepId => new Guid("E7BE577C-3E25-4772-823F-2012CDF43960");
 
-        public override IEnumerable<IConversationStep> GetConversationSteps()
-        {
-            return new[]
-            {
-                new UpdateUserLanguageStep(),
-            };
-        }
-    }
+        public override bool WaitAnswer => true;
 
-    public class UpdateUserLanguageStep : IConversationStep
-    {
-        public int Order => 0;
-        public IConversationStep NextStep => null;
-
-        public bool WaitAnswer => true;
-
-        public async Task OnGetUserAnswer(IBotHelper bot, long chatId, object response)
+        public override async Task OnGetUserAnswer(IBotHelper bot, long chatId, object response)
         {
             if (!(response is PollAnswer poll))
                 return;
@@ -51,7 +34,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             await bot.DbContext.SaveChangesAsync();
         }
 
-        public async Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId)
+        public override async Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId)
         {
             var languages = bot.DbContext.Set<Language>().ToList();
 

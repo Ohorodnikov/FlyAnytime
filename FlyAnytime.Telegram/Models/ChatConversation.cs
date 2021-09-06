@@ -12,7 +12,7 @@ namespace FlyAnytime.Telegram.Models
     {
         public virtual Chat Chat { get; set; }
         public virtual Guid ConversationId { get; set; }
-        public virtual int ConversationStep { get; set; }
+        public virtual Guid ConversationStepId { get; set; }
         public virtual DateTime CreationDateTime { get; set; } = DateTime.UtcNow;
         public virtual bool WaitAnswer { get; set; } = true;
     }
@@ -27,7 +27,7 @@ namespace FlyAnytime.Telegram.Models
         {
             //mapBuilder.Property(x => x.Chat).IsRequired();
             mapBuilder.Property(x => x.ConversationId).IsRequired();
-            mapBuilder.Property(x => x.ConversationStep).IsRequired();
+            mapBuilder.Property(x => x.ConversationStepId).IsRequired();
         }
     }
 }

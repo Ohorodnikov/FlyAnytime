@@ -183,7 +183,7 @@ namespace FlyAnytime.Telegram.Bot
             if (pressedButton == null)
                 throw new Exception("Unknown button was pressed");
 
-            await pressedButton.OnButtonPress(_botClient, callbackQuery.Message);
+            await pressedButton.OnButtonPress(_botHelper, callbackQuery.Message);
         }
 
         private async Task OnShippingQuery(ShippingQuery shippingQuery)
