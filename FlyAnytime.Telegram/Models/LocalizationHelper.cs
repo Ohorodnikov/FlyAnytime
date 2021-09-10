@@ -1,4 +1,5 @@
-﻿using FlyAnytime.Telegram.EF;
+﻿using FlyAnytime.Core.Entity;
+using FlyAnytime.Telegram.EF;
 using System;
 using System.Collections.Generic;
 using System.Linq;

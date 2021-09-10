@@ -1,10 +1,8 @@
-﻿using FlyAnytime.Core.Entity;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 
-namespace FlyAnytime.Telegram.Models
+namespace FlyAnytime.Core.Entity
 {
     public interface IEntityWithLocalization : IEntity
     {

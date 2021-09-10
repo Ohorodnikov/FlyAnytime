@@ -61,32 +61,54 @@ namespace FlyAnytime.Tools
         public static IServiceCollection AddAllImplementations<TInterface>(this IServiceCollection services, Func<Type, Type, IServiceCollection> registration)
         {
             var intType = typeof(TInterface);
-            services.AddAllImplementationsImpl<TInterface>(type => registration(intType, type));
+            services.AddAllImplementationsImpl(intType, type => registration(intType, type));
+
+            return services;
+        }
+
+        public static IServiceCollection AddAllImplementationsWithAllInterfaces<TInterface>(this IServiceCollection services, Func<Type, Type, IServiceCollection> registration)
+        {
+            services.AddAllImplementationsImpl(typeof(TInterface), type =>
+            {
+                var allInt = type.GetInterfaces();
+                foreach (var interf in allInt)
+                {
+                    if (interf.IsGenericType)
+                    {
+                        services.AddAllGenericImplementations(interf.GetGenericTypeDefinition(), registration);
+                    }
+                    else
+                    {
+                        services.AddAllImplementationsImpl(interf, t => registration(interf, t));
+                    }
+                }
+            });
 
             return services;
         }
 
         public static IServiceCollection AddAllSelfImplementations<TInterface>(this IServiceCollection services, Func<Type, Type, IServiceCollection> registration)
         {
-            services.AddAllImplementationsImpl<TInterface>(type => registration(type, type));
+            services.AddAllImplementationsImpl(typeof(TInterface), type => registration(type, type));
 
             return services;
         }
 
-        private static IServiceCollection AddAllImplementationsImpl<TInterface>(this IServiceCollection services, Action<Type> registration)
+        private static IServiceCollection AddAllImplementationsImpl(this IServiceCollection services, Type interfaceType, Action<Type> registration)
         {
             var allTypes = TypesHelper.GetAllTypes();
-            var intType = typeof(TInterface);
             var implementations = allTypes
-                .Where(type => type.IsImplementInterface(intType))
+                .Where(type => type.IsImplementInterface(interfaceType))
                 .Where(type => type.IsClass)
                 .Where(type => !type.IsAbstract)
                 .Where(type => !type.IsGenericType)
+                .ToList()
                 ;
 
             foreach (var impl in implementations)
             {
-                registration(impl);
+                if (!services.HasRegistration(interfaceType, impl))
+                    registration(impl);
             }
 
             return services;
@@ -104,11 +126,17 @@ namespace FlyAnytime.Tools
             .ToList()
             .ForEach(assignedTypes =>
             {
-                var serviceType = assignedTypes.GetInterfaces().First(i => i.GetGenericTypeDefinition() == openInterf);
-                registration(serviceType, assignedTypes);
+                var serviceType = assignedTypes.GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == openInterf);
+                if (!services.HasRegistration(serviceType, assignedTypes))
+                    registration(serviceType, assignedTypes);
             });
 
             return services;
+        }
+
+        public static bool HasRegistration(this IServiceCollection services, Type serviceType, Type implType)
+        {
+            return services.Any(x => x.ImplementationType == implType && x.ServiceType == serviceType);
         }
     }
 }
