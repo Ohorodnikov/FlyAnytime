@@ -1,6 +1,8 @@
 ﻿using FlyAnytime.Core.Entity;
 using FlyAnytime.SearchSettings.MongoDb;
 using FlyAnytime.SearchSettings.MongoDb.Mapping;
+using FlyAnytime.SearchSettings.MongoDb.Validation;
+using FlyAnytime.Tools;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using System;
@@ -23,13 +25,40 @@ namespace FlyAnytime.SearchSettings.Models.Location
 
     public class AirportMap : RootEntityMap<Airport>
     {
-        public AirportMap() : base("Airport")
+        public AirportMap(IMongoDbContext context) : base(context, "Airport")
         {
         }
 
-        public override void SetMapping(BsonClassMap<Airport> classMap)
+        public override void SetCustomMapping(BsonClassMap<Airport> classMap)
         {
             
+        }
+        public override void DoAfterMapping(BsonClassMap<Airport> classMap)
+        {
+            AddUniqueIndex(x => x.Code);
+
+            base.DoAfterMapping(classMap);
+        }
+    }
+
+    public class AirportValidator : Validator<Airport>
+    {
+        public override bool Validate(Airport entity, EntityErrorModel<Airport> modelError)
+        {
+            var isValid = true;
+
+            if (entity.Code.IsNullOrEmpty())
+            {
+                isValid = false;
+                modelError.AddValidationError(x => x.Code, "Code must be entered");
+            }
+
+            if (entity.CityId == ObjectId.Empty)
+            {
+                isValid = false;
+                modelError.AddValidationError(x => x.Code, "City Id is required");
+            }
+            return isValid;
         }
     }
 }

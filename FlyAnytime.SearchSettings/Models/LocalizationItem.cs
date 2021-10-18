@@ -19,7 +19,7 @@ namespace FlyAnytime.SearchSettings.Models
 
     public class LocalizationItemMap : InternalEntityMap<LocalizationItem>
     {
-        public override void SetMapping(BsonClassMap<LocalizationItem> classMap)
+        public override void SetCustomMapping(BsonClassMap<LocalizationItem> classMap)
         {
         }
     }

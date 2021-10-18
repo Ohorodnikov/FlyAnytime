@@ -39,7 +39,7 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
 
     public class DateSettingsMap : InternalEntityMap<DateSettings>
     {
-        public override void SetMapping(BsonClassMap<DateSettings> classMap)
+        public override void SetCustomMapping(BsonClassMap<DateSettings> classMap)
         {
         }
     }
@@ -52,7 +52,7 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
 
     public class FixedDateSettingsMap : InternalEntityMap<FixedDateSettings>
     {
-        public override void SetMapping(BsonClassMap<FixedDateSettings> classMap)
+        public override void SetCustomMapping(BsonClassMap<FixedDateSettings> classMap)
         {
         }
     }
@@ -68,7 +68,7 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
 
     public class DynamicDateSettingsMap : InternalEntityMap<DynamicDateSettings>
     {
-        public override void SetMapping(BsonClassMap<DynamicDateSettings> classMap)
+        public override void SetCustomMapping(BsonClassMap<DynamicDateSettings> classMap)
         {
         }
     }
@@ -85,7 +85,7 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
 
     public class FlyDaySettingsMap : InternalEntityMap<FlyDaySettings>
     {
-        public override void SetMapping(BsonClassMap<FlyDaySettings> classMap)
+        public override void SetCustomMapping(BsonClassMap<FlyDaySettings> classMap)
         {
         }
     }

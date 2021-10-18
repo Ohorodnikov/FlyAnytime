@@ -1,4 +1,5 @@
-﻿using FlyAnytime.SearchSettings.MongoDb.Mapping;
+﻿using FlyAnytime.Core;
+using FlyAnytime.SearchSettings.MongoDb.Mapping;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -10,12 +11,12 @@ using System.Threading.Tasks;
 
 namespace FlyAnytime.SearchSettings.MongoDb
 {
-    public interface IMongoDbContext
+    public interface IMongoDbContext : IDbContextBase
     {
         IMongoCollection<TEntity> Set<TEntity>()
             where TEntity : IMongoRootEntity;
 
-        Task InitDatabase();
+        //Task InitDatabase();
 
         void DoMap();
     }
@@ -40,12 +41,14 @@ namespace FlyAnytime.SearchSettings.MongoDb
             return _db.GetCollection<TEntity>(map.TableName);
         }
 
-        public async Task InitDatabase()
+        private static bool _inited = false;
+        public async Task ReCreateDb()
         {
-            DoMap();
-
             var allMaps = _serviceProvider.GetServices<IMongoRootEntityMap>().Select(x => x.TableName);
             await EnsureDeleted(allMaps);
+
+            DoMap();
+
             await EnsureCreated(allMaps);
         }
 
@@ -67,6 +70,9 @@ namespace FlyAnytime.SearchSettings.MongoDb
 
         public void DoMap()
         {
+            if (_inited)
+                return;
+
             var allMaps = _serviceProvider.GetServices<IMongoEntityMap>();
 
             foreach (var map in allMaps)
@@ -85,7 +91,11 @@ namespace FlyAnytime.SearchSettings.MongoDb
                 BsonClassMap.RegisterClassMap(mapper);
 
                 mapper.Freeze();
+
+                map.AfterMap(mapper);
             }
+
+            _inited = true;
         }
     }
 }

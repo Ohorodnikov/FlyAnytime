@@ -12,19 +12,29 @@ namespace FlyAnytime.SearchSettings.MongoDb.Mapping
     {
         Type EntityType { get; }
         void DoMap(BsonClassMap mapper);
+        void AfterMap(BsonClassMap mapper);
     }
 
     public interface IMongoEntityMap<TEntity> : IMongoEntityMap
         where TEntity : IMongoEntity
     {
-        void SetMapping(BsonClassMap<TEntity> classMap);
+        void SetCustomMapping(BsonClassMap<TEntity> classMap);
     }
 
     public abstract class BaseEntityMap<TEntity> : IMongoEntityMap<TEntity>
         where TEntity : IMongoEntity
     {
         public Type EntityType => typeof(TEntity);
-        public abstract void SetMapping(BsonClassMap<TEntity> classMap);
+        public abstract void SetCustomMapping(BsonClassMap<TEntity> classMap);
+        public virtual void DoAfterMapping(BsonClassMap<TEntity> classMap)
+        {
+
+        }
+
+        public void AfterMap(BsonClassMap mapper)
+        {
+            DoAfterMapping((BsonClassMap<TEntity>)mapper);
+        }
 
         public void DoMap(BsonClassMap mapper)
         {
@@ -32,7 +42,7 @@ namespace FlyAnytime.SearchSettings.MongoDb.Mapping
 
             UnmapPropertiesOnRoot(mapper);
 
-            SetMapping((BsonClassMap<TEntity>)mapper);
+            SetCustomMapping((BsonClassMap<TEntity>)mapper);
         }
 
         private void UnmapPropertiesOnRoot(BsonClassMap mapper)

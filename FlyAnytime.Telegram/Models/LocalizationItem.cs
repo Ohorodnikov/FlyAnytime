@@ -10,7 +10,7 @@ namespace FlyAnytime.Telegram.Models
 {
     public class LocalizationItem : Entity<long>
     {
-        protected LocalizationItem() { }
+        public LocalizationItem() { }
         public virtual long LanguageId { get; set; }
         public virtual Language Language { get; set; }
         public virtual string ItemId { get; set; }

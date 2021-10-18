@@ -4,6 +4,7 @@ using FlyAnytime.SearchSettings.MongoDb.Mapping;
 using FlyAnytime.SearchSettings.MongoDb.Validation;
 using FlyAnytime.Tools;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,25 +19,33 @@ namespace FlyAnytime.SearchSettings.Models
 
     public class LanguageMap : RootEntityMap<Language>
     {
-        public LanguageMap() : base("Language")
+        public LanguageMap(IMongoDbContext context) : base(context, "Language")
         {
         }
 
-        public override void SetMapping(BsonClassMap<Language> classMap)
+        public override void SetCustomMapping(BsonClassMap<Language> classMap)
         {
+            
+        }
+
+        public override void DoAfterMapping(BsonClassMap<Language> classMap)
+        {
+            AddUniqueIndex(x => x.Code);
+
+            base.DoAfterMapping(classMap);
         }
     }
 
     public class LangugeValidator : Validator<Language>
     {
-        public override bool Validate(Language entity, EntityErrorModel modelError)
+        public override bool Validate(Language entity, EntityErrorModel<Language> modelError)
         {
             var isValid = true;
 
             if (entity.Code.IsNullOrEmpty())
             {
                 isValid = false;
-                modelError.AddValidationError<Language>(x => x.Code, "Code is empty");
+                modelError.AddValidationError(x => x.Code, "Code is empty");
             }
 
             return isValid;

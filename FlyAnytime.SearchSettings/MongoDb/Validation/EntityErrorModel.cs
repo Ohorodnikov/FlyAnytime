@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FlyAnytime.Tools;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -21,7 +22,7 @@ namespace FlyAnytime.SearchSettings.MongoDb.Validation
 
         public bool HasValidationError => PropertyErrors.Any();
 
-        public readonly Dictionary<string, List<string>> PropertyErrors = new Dictionary<string, List<string>>();
+        public Dictionary<string, List<string>> PropertyErrors { get; } = new Dictionary<string, List<string>>();
 
         public Exception Exception { get; }
 
@@ -29,14 +30,19 @@ namespace FlyAnytime.SearchSettings.MongoDb.Validation
         {
             PropertyErrors.TryGetValue(propName, out var errorList);
 
+            errorList = errorList ?? new List<string>();
+
             errorList.Add(message);
 
             PropertyErrors[propName] = errorList;
         }
+    }
 
-        public void AddValidationError<TEntity>(Expression<Func<TEntity, object>> property, string message)
+    public class EntityErrorModel<TEntity> : EntityErrorModel
+    {
+        public void AddValidationError<TResult>(Expression<Func<TEntity, TResult>> property, string message)
         {
-            AddValidationError(property.ToString(), message);
+            AddValidationError(property.GetStringBody(), message);
         }
     }
 }

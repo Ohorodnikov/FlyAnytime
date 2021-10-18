@@ -2,6 +2,8 @@
 using FlyAnytime.SearchSettings.Models.SearchSettings;
 using FlyAnytime.SearchSettings.MongoDb;
 using FlyAnytime.SearchSettings.MongoDb.Mapping;
+using FlyAnytime.SearchSettings.MongoDb.Validation;
+using FlyAnytime.Tools;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using System;
@@ -26,12 +28,41 @@ namespace FlyAnytime.SearchSettings.Models
 
     public class ChatMap : RootEntityMap<Chat>
     {
-        public ChatMap() : base("Chat")
+        public ChatMap(IMongoDbContext context) : base(context, "Chat")
         {
         }
 
-        public override void SetMapping(BsonClassMap<Chat> classMap)
+        public override void SetCustomMapping(BsonClassMap<Chat> classMap)
         {
+        }
+
+        public override void DoAfterMapping(BsonClassMap<Chat> classMap)
+        {
+            AddUniqueIndex(x => x.ChatId);
+
+            base.DoAfterMapping(classMap);
+        }
+    }
+
+    public class ChatValidator : Validator<Chat>
+    {
+        public override bool Validate(Chat entity, EntityErrorModel<Chat> modelError)
+        {
+            var isValid = true;
+
+            if (entity.ChatId.IsNullOrEmpty())
+            {
+                isValid = false;
+                modelError.AddValidationError(x => x.ChatId, "Chat Id must be filled");
+            }
+
+            if (entity.ChatOwnerId == ObjectId.Empty)
+            {
+                isValid = false;
+                modelError.AddValidationError(x => x.ChatId, "User Id must be filled");
+            }
+
+            return isValid;
         }
     }
 }

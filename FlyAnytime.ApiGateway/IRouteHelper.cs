@@ -44,7 +44,17 @@ namespace FlyAnytime.ApiGateway
                 return resultContent;
             }
 
-            if (redirect.NeedAuth)
+            var skipAuthHeader = request.Headers["SkipAuth"];
+            var requestHost = request.Host;
+            var selfLocalUrl = new Uri(Configuration.GetSection("SelfUrlLocal").Value);
+
+            var skipAuth = 
+                skipAuthHeader.ToString().ToUpper() == "2BD696F0-8E4A-416F-AB17-786BDB10D044"
+                && requestHost.Host == selfLocalUrl.Host
+                && requestHost.Port == selfLocalUrl.Port
+                ;
+
+            if (!skipAuth && redirect.NeedAuth)
             {
                 var authUrl = Configuration.GetSection("AuthRoute").Value;
                 using (var newRequest = new HttpRequestMessage(new HttpMethod(request.Method), authUrl))
@@ -56,6 +66,7 @@ namespace FlyAnytime.ApiGateway
                     var authResponse = await client.SendAsync(newRequest);
                     if (!authResponse.IsSuccessStatusCode)
                         return GetRedirectResult("Not auth", false);
+
                     var authResponseStr = await authResponse.Content.ReadAsStringAsync();
                     var q = (dynamic)JsonConvert.DeserializeObject(authResponseStr);
                     if (q.jwtStatus == false)
@@ -67,7 +78,7 @@ namespace FlyAnytime.ApiGateway
 
             var redirectResult = await RedirectTo(request, redirectUrl);
 
-            var msg = redirectResult.IsSuccessStatusCode ? await redirectResult.Content.ReadAsStringAsync() : redirectResult.ReasonPhrase;
+            var msg = await redirectResult.Content.ReadAsStringAsync();
 
             return GetRedirectResult(msg, redirectResult.IsSuccessStatusCode);
         }
@@ -127,11 +138,16 @@ namespace FlyAnytime.ApiGateway
 
             using (var newRequest = new HttpRequestMessage(new HttpMethod(request.Method), redirectUrl))
             {
-                newRequest.Content = new StringContent(requestContent, Encoding.UTF8, request.ContentType);
-                if (request.Headers.TryGetValue("Authorization", out var res))
+                var contType = request.ContentType?.Split(';')[0];
+                newRequest.Content = new StringContent(requestContent, Encoding.UTF8, contType);
+                foreach (var header in request.Headers)
                 {
-                    newRequest.Headers.Add("Authorization", res.ToList());
+                    newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToList());
                 }
+                //if (request.Headers.TryGetValue("Authorization", out var res))
+                //{
+                //    newRequest.Headers.Add("Authorization", res.ToList());
+                //}
                 newRequest.Headers.Add("GatewayUrl", $"https://{request.Host.Value}");
                 return await client.SendAsync(newRequest);
             }

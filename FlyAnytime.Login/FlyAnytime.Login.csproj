@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\FlyAnytime.Core.Web\FlyAnytime.Core.Web.csproj" />
     <ProjectReference Include="..\FlyAnytime.Core\FlyAnytime.Core.csproj" />
     <ProjectReference Include="..\FlyAnytime.Messaging\FlyAnytime.Messaging.csproj" />
     <ProjectReference Include="..\FlyAnytime.Tools\FlyAnytime.Tools.csproj" />

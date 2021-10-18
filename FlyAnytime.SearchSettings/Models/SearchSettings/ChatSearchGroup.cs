@@ -31,7 +31,7 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
 
     public class ChatSearchGroupMap : InternalEntityMap<ChatSearchGroup>
     {
-        public override void SetMapping(BsonClassMap<ChatSearchGroup> classMap)
+        public override void SetCustomMapping(BsonClassMap<ChatSearchGroup> classMap)
         {
         }
     }

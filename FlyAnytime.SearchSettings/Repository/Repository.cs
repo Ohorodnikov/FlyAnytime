@@ -24,51 +24,170 @@ namespace FlyAnytime.SearchSettings.Repository
             _validator = validator;
         }
 
-        public async Task<TEntity> GetById(ObjectId id)
+        public IMongoCollection<TEntity> Set => _dbContext.Set<TEntity>();
+
+        public long Count => Set.Find(x => true).CountDocuments();
+
+        public async Task<IMongoRepoResult<TEntity>> GetById(ObjectId id)
         {
-            return await _dbContext
-                .Set<TEntity>()
+            var entity = await Set
                 .Find(ent => ent.Id == id)
                 .FirstOrDefaultAsync();
+
+
+            if (entity == null)
+            {
+                var errModel = new EntityErrorModel<TEntity>();
+                errModel.AddValidationError(x => x.Id, "Entity was not found!");
+
+                return new MongoRepoResult<TEntity>(errModel);
+            }
+
+            return new MongoRepoResult<TEntity>(entity);
+        }
+        public async Task<IMongoRepoResult<TEntity>> GetBy(string propName, string value)
+        {
+            var flt = Builders<TEntity>.Filter;
+
+            var filter = flt.Eq(propName, value);
+
+            var entity = await Set
+                .Find(filter)
+                .FirstOrDefaultAsync();
+
+            if (entity == null)
+            {
+                var errModel = new EntityErrorModel<TEntity>();
+                errModel.AddValidationError(x => x.Id, "Entity was not found!");
+
+                return new MongoRepoResult<TEntity>(errModel);
+            }
+
+            return new MongoRepoResult<TEntity>(entity);
         }
 
         private void SetIdsForInternalEntities<TEnt>(TEnt entity)
             where TEnt : IMongoEntity
         {
+            void SetIdImpl(IMongoInternalEntity e)
+            {
+                if (e != null && e.Id == default)
+                    e.Id = Guid.NewGuid();
+
+                SetIdsForInternalEntities(e);
+            }
+
             var props = entity.GetType().GetAllPropsOfType(typeof(IMongoInternalEntity));
 
             foreach (var prop in props)
             {
-                var value = (IMongoInternalEntity)prop.GetValue(entity);
-                if (value != null)
-                    value.Id = Guid.NewGuid();                
-
-                SetIdsForInternalEntities(value);
+                var v = prop.GetValue(entity);
+                if (v is IMongoInternalEntity value)
+                    SetIdImpl(value);
+                else if (v is IEnumerable<IMongoInternalEntity> internalList)
+                    foreach (var val in internalList)
+                        SetIdImpl(val);
             }
         }
 
-        public async Task<(bool success, EntityErrorModel errorModel)> TryCreate(TEntity entity)
+        private IMongoRepoResult<TEntity> Validate(TEntity entity)
         {
-            SetIdsForInternalEntities(entity);
             if (_validator != null)
             {
                 var (isValid, errorModel) = _validator.IsValid(entity);
                 if (!isValid)
-                {
-                    return (success: false, errorModel: errorModel);
-                }
+                    return new MongoRepoResult<TEntity>(errorModel);
             }
 
+            return new MongoRepoResult<TEntity>(entity);
+        }
+
+        public async Task<IMongoRepoResult<TEntity>> TryCreate(TEntity entity)
+        {
+            if (entity == null)
+            {
+                var errModel = new EntityErrorModel<TEntity>();
+                errModel.AddValidationError("Entity", "Entity is null");
+                return new MongoRepoResult<TEntity>(errModel);
+            }
+            SetIdsForInternalEntities(entity);
+
+            var res = Validate(entity);
+            if (!res.Success)
+                return res;
+
+            async Task<TEntity> _doSave()
+            {
+                await Set.InsertOneAsync(entity);
+
+                return entity;
+            }
+
+            return await TryDoAction(_doSave);
+        }
+
+        public async Task<IMongoRepoResult<TEntity>> TryDelete(ObjectId id)
+        {
+            var getResult = await GetById(id);
+
+            if (!getResult.Success)
+                return getResult;
+
+            async Task<TEntity> _doDelete()
+            {
+                await Set.DeleteOneAsync(x => x.Id == id);
+
+                return getResult.Entity;
+            }
+
+            return await TryDoAction(_doDelete);
+        }
+
+        public async Task<IMongoRepoResult<TEntity>> TryReplace(TEntity entity)
+        {
+            var getResult = await GetById(entity.Id);
+
+            if (!getResult.Success)
+                return getResult;
+
+            SetIdsForInternalEntities(entity);
+
+            var res = Validate(entity);
+            if (!res.Success)
+                return res;
+
+            async Task<TEntity> _doSave()
+            {
+                var ro = new ReplaceOptions { IsUpsert = false };
+
+                var replaceResult = await Set.ReplaceOneAsync(x => x.Id == entity.Id, entity, ro);
+
+                return entity;
+            }
+
+            return await TryDoAction(_doSave);
+        }
+
+        private async Task<IMongoRepoResult<TEntity>> TryDoAction(Func<Task<TEntity>> act)
+        {
+            IMongoRepoResult<TEntity> res;
             try
             {
-                await _dbContext.Set<TEntity>().InsertOneAsync(entity);
-                return (success: true, errorModel: null);
+                var entity = await act();
+
+                res = new MongoRepoResult<TEntity>(entity);
             }
             catch (Exception e)
             {
-                var errModel = new EntityErrorModel(e);
-                return (success: false, errorModel: errModel);
+                res = new MongoRepoResult<TEntity>(new EntityErrorModel(e));
             }
+
+            return res;
+        }
+
+        public async Task<IEnumerable<TEntity>> GetNext(int skip, int take)
+        {
+            return await Set.Find(x => true).Skip(skip).Limit(take).ToListAsync();
         }
     }
 }

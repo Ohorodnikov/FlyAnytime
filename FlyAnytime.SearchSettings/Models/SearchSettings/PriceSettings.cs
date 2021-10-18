@@ -29,7 +29,7 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
 
     public class PriceSettingsMap : InternalEntityMap<PriceSettings>
     {
-        public override void SetMapping(BsonClassMap<PriceSettings> classMap)
+        public override void SetCustomMapping(BsonClassMap<PriceSettings> classMap)
         {
         }
     }

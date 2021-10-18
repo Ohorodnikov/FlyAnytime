@@ -48,8 +48,12 @@ namespace FlyAnytime.SearchSettings
             //services.AddAllGenericImplementations(typeof(IRepository<>), services.AddTransient);
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
 
+            services.AddAutoMapper(typeof(Startup));
+
             services.AddRabbitMq();
-            services.AddControllers();
+            services.AddControllers()
+                .AddNewtonsoftJson()
+                ;
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -60,7 +64,7 @@ namespace FlyAnytime.SearchSettings
                 app.UseDeveloperExceptionPage();
             }
 
-            app.ApplicationServices.GetService<IMongoDbContext>().InitDatabase().Wait();
+            app.ApplicationServices.GetService<IMongoDbContext>().DoMap();//.Wait();
 
             app.UseHttpsRedirection();
 

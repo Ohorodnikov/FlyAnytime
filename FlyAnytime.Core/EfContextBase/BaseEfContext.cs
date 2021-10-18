@@ -5,24 +5,25 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace FlyAnytime.Core.EfContextBase
 {
-    public abstract class BaseEfContext<TContext> : DbContext
+    public abstract class BaseEfContext<TContext> : DbContext, IDbContextBase
         where TContext : BaseEfContext<TContext>
     {
         IServiceProvider _serviceProvider;
-
-        private static bool _firstRun = true;
 
         public BaseEfContext(DbContextOptions<TContext> options, IServiceProvider serviceProvider) : base(options)
         {
             _serviceProvider = serviceProvider;
 
-            if (_firstRun)
-                Database.EnsureDeleted();
+            Database.EnsureCreated();
+        }
 
-            _firstRun = false;
+        public virtual async Task ReCreateDb()
+        {
+            Database.EnsureDeleted();
             Database.EnsureCreated();
         }
 

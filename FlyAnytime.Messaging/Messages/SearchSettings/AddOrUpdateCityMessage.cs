@@ -6,12 +6,12 @@ namespace FlyAnytime.Messaging.Messages.SearchSettings
 {
     public class AddOrUpdateCityMessage : BaseMessage
     {
-        public AddOrUpdateCityMessage(string code, string name, string countryCode, Dictionary<string, string> language2value)
+        public AddOrUpdateCityMessage(string code, string name, string countryCode, Dictionary<string, string> languageCode2value)
         {
             Code = code;
             Name = name;
             CountryCode = countryCode;
-            LanguageCode2Value = language2value;
+            LanguageCode2Value = languageCode2value;
         }
 
         public string Code { get; private set; }
