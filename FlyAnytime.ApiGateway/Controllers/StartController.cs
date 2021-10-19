@@ -19,7 +19,7 @@ namespace FlyAnytime.ApiGateway.Controllers
         private async Task<List<object>> SendWOAuth(string route, HttpMethod method, Dictionary<string, string> headers = null)
         {
             headers = headers ?? new Dictionary<string, string>();
-            var ngrokUrl = _configuration.GetSection("SelfUrlLocal").Value;
+            var selfLocalUrl = _configuration.GetSection("SelfUrlLocal").Value;
             var routeMaps = _configuration.GetSection("RouteMap").Get<RouteMap[]>();
 
             var initResult = new List<object>();
@@ -27,7 +27,7 @@ namespace FlyAnytime.ApiGateway.Controllers
             var http = new HttpClient();
             foreach (var routeMap in routeMaps)
             {
-                var url = $"{ngrokUrl}{routeMap.Route}/{route}";
+                var url = $"{selfLocalUrl}{routeMap.Route}/{route}";
                 using (var newRequest = new HttpRequestMessage(method, url))
                 {
                     foreach (var header in headers)

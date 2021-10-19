@@ -13,7 +13,7 @@ namespace FlyAnytime.Telegram.Models
         public virtual string Code { get; set; }
         public virtual string Name { get; set; }
 
-        public string TypeDescriptor => "SearchCountry";
+        public string TypeDescriptor => "SearchCity";
         public virtual SearchCountry Country { get; set; }
     }
 

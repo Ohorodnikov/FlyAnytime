@@ -34,12 +34,12 @@ namespace FlyAnytime.Telegram.MessageHandlers
             var cities = _dbContext.Set<SearchCity>().Where(x => x.Country.Id == country.Id);
 
             foreach (var city in cities)
-                _dbContext.RemoveRange(_localizationHelper.GetEntityLocalizations(city));
+                _dbContext.RemoveRange(await _localizationHelper.GetEntityLocalizations(city));
 
-            var countryLocs = _localizationHelper.GetEntityLocalizations(country);
+            var countryLocs = await _localizationHelper.GetEntityLocalizations(country);
             _dbContext.RemoveRange(countryLocs);
 
-            var chatsWithCurrentCountry = _dbContext.Set<ChatSettings>()
+            var chatsWithCurrentCountry = _dbContext.Set<Chat>()
                 .Where(x => x.SearchSettings.ChatCountry.Id == country.Id)
                 .ToList();
 
@@ -54,10 +54,10 @@ namespace FlyAnytime.Telegram.MessageHandlers
 
             await _dbContext.SaveChangesAsync();
 
-            foreach (var settings in chatsWithCurrentCountry)
+            foreach (var chat in chatsWithCurrentCountry)
             {
                 var countryLocal = countryLocs
-                    .FirstOrDefault(x => x.Language.Id == settings.UserLanguage.Id)?.Localization
+                    .FirstOrDefault(x => x.Language.Id == chat.UserLanguage.Id)?.Localization
                     ?? country.Name
                     ;
 
@@ -67,7 +67,7 @@ namespace FlyAnytime.Telegram.MessageHandlers
                     });
 
                 await _botHelper.Bot.SendTextMessageAsync(
-                    settings.Chat.Id, 
+                    chat.Id, 
                     $"Your country {countryLocal} has been removed. Press button to set up new settings for country and city",
                     replyMarkup: inlineKeyboard
                     );

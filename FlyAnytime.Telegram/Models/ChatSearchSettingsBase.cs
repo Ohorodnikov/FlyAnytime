@@ -10,7 +10,6 @@ namespace FlyAnytime.Telegram.Models
 {
     public class ChatSearchSettingsBase : Entity<long>
     {
-        public virtual Chat Chat { get; set; }
         public virtual SearchCity ChatCity { get; set; }
         public virtual SearchCountry ChatCountry { get; set; }
     }

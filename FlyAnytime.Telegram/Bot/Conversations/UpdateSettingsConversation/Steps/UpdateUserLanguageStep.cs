@@ -1,72 +1,57 @@
-﻿using FlyAnytime.Telegram.Models;
+﻿using FlyAnytime.Messaging.Messages;
+using FlyAnytime.Messaging.Messages.ChatSettings;
+using FlyAnytime.Telegram.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 {
-    public class UpdateUserLanguageStep : BaseConversationStep
+    public class UpdateUserLanguageStep : BaseInlineQueryConversationStep
     {
         public override Guid StepId => new Guid("E7BE577C-3E25-4772-823F-2012CDF43960");
 
         public override bool WaitAnswer => true;
 
-        public override async Task OnGetUserAnswer(IBotHelper bot, long chatId, object response)
+        protected override string GetExplanationText(Language language)
         {
-            if (!(response is PollAnswer poll))
-                return;
-
-            var savedPoll = bot.DbContext.Set<Models.Poll>().Find(poll.PollId);
-
-            var selectedItem = savedPoll.Items.FirstOrDefault(x => x.Order == poll.OptionIds[0]);
-
-            var settings = bot.DbContext.Set<ChatSettings>().First(x => x.Chat.Id == chatId);
-
-            settings.UserLanguage = bot.DbContext.Set<Language>().Find(long.Parse(selectedItem.Value));
-
-            await bot.Bot.StopPollAsync(chatId, savedPoll.MessageId);
-
-            savedPoll.IsClosed = true;
-
-            await bot.DbContext.SaveChangesAsync();
+            return "Press the button to select your language";
         }
 
-        public override async Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId)
+        protected override async Task<List<OneItemInlineQuery>> GetAnswersForInlineQuery(InlineQuery inlQ)
         {
-            var languages = bot.DbContext.Set<Language>().ToList();
+            var languages = await Bot.DbContext.Set<Language>()
+                .Where(x => x.Name.StartsWith(inlQ.Query))
+                .ToListAsync()
+                ;
 
-            var pollItems = new List<PollItem>();
+            return
+                languages
+                .Select(x => new OneItemInlineQuery(x.Id.ToString(), x.Name, x.Name))
+                .ToList();
+        }
 
-            for (int i = 0; i < languages.Count; i++)
-            {
-                pollItems.Add(new PollItem
-                {
-                    Order = i,
-                    Text = languages[i].Name,
-                    Value = languages[i].Id.ToString()
-                });
-            }
+        protected override async Task OnSelectInlineQuery(Message answer)
+        {
+            var language = await Bot.DbContext.Set<Language>()
+                .Where(x => x.Name == answer.Text)
+                .FirstAsync();
 
-            var poll = new Models.Poll
-            {
-                Chat = bot.DbContext.Set<Models.Chat>().Find(chatId),
-                IsClosed = false,
-                Items = pollItems
-            };
+            var settings = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
 
-            var msg = await bot.Bot.SendPollAsync(chatId, "Select your language", pollItems.Select(x => x.Text), false, PollType.Regular, false);
+            settings.UserLanguage = language;
 
-            poll.Id = msg.Poll.Id;
-            poll.MessageId = msg.MessageId;
+            await Bot.DbContext.SaveChangesAsync();
 
-            bot.DbContext.Add(poll);
+            var message = new UpdateChatLanguageMessage(ChatId, language.Code);
 
-            await bot.DbContext.SaveChangesAsync();
-
-            return msg;
+            Bot.MessageBus.Publish(message);
         }
     }
 }

@@ -16,6 +16,7 @@ namespace FlyAnytime.Telegram.Bot
         ITelegramBotClient Bot { get; }
         TelegramContext DbContext { get; }
         IMessageBus MessageBus { get; }
+        IServiceProvider ServiceProvider { get; }
 
         Task<global::Telegram.Bot.Types.Message> OnStartPrivateChat(long chatId);
         Task OnReStartPrivateChat(long chatId);
@@ -31,12 +32,14 @@ namespace FlyAnytime.Telegram.Bot
         public ITelegramBotClient Bot { get; }
         public TelegramContext DbContext { get; }
         public IMessageBus MessageBus { get; }
+        public IServiceProvider ServiceProvider { get; }
 
-        public BotHelper(ITelegramBotClient bot, TelegramContext context, IMessageBus messageBus)
+        public BotHelper(ITelegramBotClient bot, TelegramContext context, IMessageBus messageBus, IServiceProvider serviceProvider)
         {
             Bot = bot;
             DbContext = context;
             MessageBus = messageBus;
+            ServiceProvider = serviceProvider;
         }
 
         public async Task<global::Telegram.Bot.Types.Message> OnStartPrivateChat(long chatId)
@@ -88,20 +91,10 @@ namespace FlyAnytime.Telegram.Bot
 
             dbChat.ChatOwner = user;
 
+            dbChat.UserLanguage = DbContext.Set<Language>().First();
+
+            dbChat.SearchSettings = new ChatSearchSettingsBase();
             DbContext.Set<Chat>().Add(dbChat);
-
-
-            var chatSettings = new ChatSettings
-            {
-                Chat = dbChat,
-                UserLanguage = DbContext.Set<Language>().First(),
-                SearchSettings = new ChatSearchSettingsBase
-                {
-                    Chat = dbChat
-                }
-            };
-
-            DbContext.Add(chatSettings);
 
             await DbContext.SaveChangesAsync();
 

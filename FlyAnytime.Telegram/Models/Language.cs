@@ -26,7 +26,7 @@ namespace FlyAnytime.Telegram.Models
             mapBuilder.Property(x => x.Code).IsRequired();
             mapBuilder.Property(x => x.Name).IsRequired();
 
-            mapBuilder.HasData(GetDefaultValues());
+            //mapBuilder.HasData(GetDefaultValues());
         }
 
         private IEnumerable<Language> GetDefaultValues()

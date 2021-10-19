@@ -165,6 +165,9 @@ namespace FlyAnytime.Telegram.Bot
         }
         private async Task OnInlineQuery(InlineQuery inlineQuery)
         {
+            if (await TryProcessConversation(inlineQuery.From.Id, inlineQuery))
+                return;
+
             //https://core.telegram.org/bots/inline
         }
 

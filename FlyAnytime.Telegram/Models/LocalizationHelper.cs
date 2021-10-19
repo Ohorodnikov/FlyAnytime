@@ -1,5 +1,6 @@
 ﻿using FlyAnytime.Core.Entity;
 using FlyAnytime.Telegram.EF;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,10 +10,13 @@ namespace FlyAnytime.Telegram.Models
 {
     public interface ILocalizationHelper
     {
-        IEnumerable<LocalizationItem> GetEntityLocalizations<TEntity>(TEntity entity) where TEntity : class, IEntityWithLocalization;
+        Task<IEnumerable<LocalizationItem>> GetEntityLocalizations<TEntity>(TEntity entity) where TEntity : class, IEntityWithLocalization;
         Task RemoveLocalization<TEntity>(TEntity entity, Language language) where TEntity : class, IEntityWithLocalization;
         Task RemoveAllLocalizations<TEntity>(TEntity entity) where TEntity : class, IEntityWithLocalization;
         Task AddOrUpdateEntityLocalizations<TEntity>(TEntity entity, Dictionary<string, string> languageCode2value) where TEntity : class, IEntityWithLocalization;
+
+        Task<IEnumerable<(TEntity entity, LocalizationItem localization)>> FindEntitiesByLocalization<TEntity>(Language language, string searchKey) where TEntity : class, IEntityWithLocalization, new();
+
     }
 
     public class LocalizationHelper : ILocalizationHelper
@@ -32,7 +36,7 @@ namespace FlyAnytime.Telegram.Models
             if (entityIdDb == null)
                 return;
 
-            var currentLocalizations = GetEntityLocalizations(entityIdDb);
+            var currentLocalizations = await GetEntityLocalizations(entityIdDb);
 
             foreach (var t in languageCode2Value)
             {
@@ -51,12 +55,12 @@ namespace FlyAnytime.Telegram.Models
             await _dbContext.SaveChangesAsync();
         }
 
-        public IEnumerable<LocalizationItem> GetEntityLocalizations<TEntity>(TEntity entity)
+        public async Task<IEnumerable<LocalizationItem>> GetEntityLocalizations<TEntity>(TEntity entity)
             where TEntity : class, IEntityWithLocalization
         {
-            var localizationItems = _dbContext.Set<LocalizationItem>()
+            var localizationItems = await _dbContext.Set<LocalizationItem>()
                 .Where(x => x.ItemId == entity.Id.ToString() && x.EntityDescriptor == entity.TypeDescriptor)
-                .ToList();
+                .ToListAsync();
 
             return localizationItems;
         }
@@ -64,7 +68,7 @@ namespace FlyAnytime.Telegram.Models
         public async Task RemoveAllLocalizations<TEntity>(TEntity entity)
             where TEntity : class, IEntityWithLocalization
         {
-            var allLocalizations = GetEntityLocalizations(entity);
+            var allLocalizations = await GetEntityLocalizations(entity);
 
             _dbContext.RemoveRange(allLocalizations);
 
@@ -75,6 +79,34 @@ namespace FlyAnytime.Telegram.Models
             where TEntity : class, IEntityWithLocalization
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<IEnumerable<(TEntity entity, LocalizationItem localization)>> FindEntitiesByLocalization<TEntity>(Language language, string searchKey)
+            where TEntity : class, IEntityWithLocalization, new()
+        {
+            var entTypeDescr = new TEntity().TypeDescriptor;
+            var itemIds2LocValue = await _dbContext.Set<LocalizationItem>()
+                .Where(x => x.LanguageId == language.Id && x.EntityDescriptor == entTypeDescr && x.Localization.StartsWith(searchKey))
+                //.Select(x => new { x.ItemId, x.Localization })
+                .ToListAsync()
+                ;
+
+            var itemIds = itemIds2LocValue.Select(x => x.ItemId).ToList();
+
+            var items = await _dbContext.Set<TEntity>()
+                .Where(x => itemIds.Contains(x.Id.ToString()))
+                .ToListAsync()
+                ;
+
+            var res = new List<(TEntity entity, LocalizationItem localization)>();
+
+            foreach (var item in items)
+            {
+                var value = itemIds2LocValue.First(x => x.ItemId == item.Id.ToString());
+                res.Add((item, value));
+            }
+
+            return res;
         }
     }
 }

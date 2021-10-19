@@ -8,14 +8,31 @@ namespace FlyAnytime.Telegram.Bot.Conversations
     {
         Guid StepId { get; }
         bool WaitAnswer { get; }
-        Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId);
-        Task OnGetUserAnswer(IBotHelper bot, long chatId, object response);
+        bool MoveToNextStep { get; }
+        IBotHelper Bot { get; }
+        long ChatId { get; }
+
+        void SetBotHelperAndChatId(IBotHelper bot, long chatId);
+
+        Task<Message> SendConversationBotMessage();
+        Task OnGetUserAnswer(object response);
     }
 
     public abstract class BaseConversationStep : IConversationStep, IEquatable<BaseConversationStep>
     {
         public abstract Guid StepId { get; }
         public abstract bool WaitAnswer { get; }
+
+        public bool MoveToNextStep { get; protected set; } = true;
+        public IBotHelper Bot { get; private set; }
+        public long ChatId { get; private set; }
+
+        public void SetBotHelperAndChatId(IBotHelper bot, long chatId)
+        {
+            Bot = bot;
+            ChatId = chatId;
+        }
+        
 
         public override bool Equals(object obj)
         {
@@ -33,9 +50,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             return HashCode.Combine(StepId);
         }
 
-        public abstract Task OnGetUserAnswer(IBotHelper bot, long chatId, object response);
-        public abstract Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId);
-
-
+        public abstract Task OnGetUserAnswer(object response);
+        public abstract Task<Message> SendConversationBotMessage();
     }
 }

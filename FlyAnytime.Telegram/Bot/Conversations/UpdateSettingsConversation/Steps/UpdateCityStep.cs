@@ -1,25 +1,52 @@
-﻿using System;
+﻿using FlyAnytime.Messaging.Messages.ChatSettings;
+using FlyAnytime.Telegram.Models;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 {
-    public class UpdateCityStep : BaseConversationStep
+    public class UpdateCityStep : SearchByLocalizationConversationStep<SearchCity>
     {
         public override Guid StepId => new Guid("057F1851-9210-4344-A427-10402D6D0313");
 
-        public override bool WaitAnswer => true;
-
-        public override async Task OnGetUserAnswer(IBotHelper bot, long chatId, object response)
+        protected override OneItemInlineQuery ConvertToOneItemInlineQuery(SearchCity entity, LocalizationItem localization)
         {
-            throw new NotImplementedException();
+            return new OneItemInlineQuery(entity.Code, localization.Localization, $"{localization.Localization}({entity.Code})", entity.Code);
         }
 
-        public override async Task<Message> SendConversationBotMessage(IBotHelper bot, long chatId)
+        protected override IEnumerable<(SearchCity entity, LocalizationItem loc)> AdditionalFilterForEntities(IEnumerable<(SearchCity entity, LocalizationItem loc)> ents)
         {
-            throw new NotImplementedException();
+            var userCountry = Bot.DbContext.Set<Models.Chat>().Find(ChatId).SearchSettings.ChatCountry.Id;
+
+            return
+                ents.Where(x => x.entity.Country.Id == userCountry);
+        }
+
+        protected override async Task OnSelectInlineQuery(Message answer)
+        {
+            var parts = answer.Text.Split("(");
+            var cityCode = parts[1].TrimEnd(')');
+
+            var settings = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
+            settings.SearchSettings.ChatCity = await Bot.DbContext.Set<SearchCity>().FirstAsync(x => x.Code == cityCode);
+
+            await Bot.DbContext.SaveChangesAsync();
+
+            var msg = new UpdateChatCityMessage(ChatId, cityCode);
+
+            Bot.MessageBus.Publish(msg);
+
+            await Bot.Bot.SendTextMessageAsync(ChatId, $"City {parts[0]} was setted successfully");
+        }
+
+        protected override string GetExplanationText(Language language)
+        {
+            return "Press the button to enter your city";
         }
     }
 }

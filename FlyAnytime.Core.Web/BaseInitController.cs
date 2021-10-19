@@ -17,7 +17,7 @@ namespace FlyAnytime.Core.Web
         }
 
         [Route("init")]
-        public virtual IActionResult Init([FromServices] ICommonSettings settings)
+        public virtual async Task<IActionResult> Init([FromServices] ICommonSettings settings)
         {
             var gatewayUrl = Request.Headers["GatewayUrl"].ToString();
             settings.ApiGatewayUrl = gatewayUrl;

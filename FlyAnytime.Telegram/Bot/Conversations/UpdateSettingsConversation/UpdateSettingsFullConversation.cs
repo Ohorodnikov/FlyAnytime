@@ -20,6 +20,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
                 .SetNextStep(new UpdateUserLanguageStep())
                 .SetNextStep(new UpdateCountryStep())
                 .SetNextStep(new UpdateCityStep())
+                .SetNextStep(new UpdatePriceAndCountryStep())
                 ;
         }
     }

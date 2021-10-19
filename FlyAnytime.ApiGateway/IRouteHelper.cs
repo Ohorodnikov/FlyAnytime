@@ -127,6 +127,13 @@ namespace FlyAnytime.ApiGateway
             return redirectBase + redirectPath + queryParams;
         }
 
+        private static HashSet<string> _skipHeaders = new HashSet<string>() 
+        { 
+            "Host",
+            "Content-Type",
+            "Content-Length",
+        };
+
         private async Task<HttpResponseMessage> RedirectTo(HttpRequest request, string redirectUrl)
         {
             string requestContent;
@@ -142,13 +149,27 @@ namespace FlyAnytime.ApiGateway
                 newRequest.Content = new StringContent(requestContent, Encoding.UTF8, contType);
                 foreach (var header in request.Headers)
                 {
-                    newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToList());
+                    if (_skipHeaders.Contains(header.Key))
+                    {
+                        continue;
+                    }
+
+                    try
+                    {
+                        newRequest.Headers.Add(header.Key, header.Value.ToList());
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        if (ex.Message.Contains("Misused header name"))
+                            _skipHeaders.Add(header.Key);
+                    }
+                    //newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToList());
                 }
                 //if (request.Headers.TryGetValue("Authorization", out var res))
                 //{
                 //    newRequest.Headers.Add("Authorization", res.ToList());
                 //}
-                newRequest.Headers.Add("GatewayUrl", $"https://{request.Host.Value}");
+                newRequest.Headers.Add("GatewayUrl", Configuration.GetSection("SelfUrl").Value);// $"https://{request.Host.Value}");
                 return await client.SendAsync(newRequest);
             }
         }

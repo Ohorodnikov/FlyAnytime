@@ -21,7 +21,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
         {
             Bot = bot;
             ConversationId = conversationId;
-            _stepIniter = new ConversationStepIniter();
+            _stepIniter = new ConversationStepIniter(bot);
             DoStepInit();
         }
 
@@ -38,6 +38,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
 
         public virtual async Task<Message> Start(long chatId)
         {
+            _stepIniter.SetChatId(chatId);
             var firstStep = _stepIniter.GetFirstStep();
 
             return await SaveAndSentStep(chatId, firstStep);
@@ -49,12 +50,17 @@ namespace FlyAnytime.Telegram.Bot.Conversations
                 .Where(x => x.Chat.Id == chatId && x.ConversationId == ConversationId)
                 .OrderByDescending(x => x.CreationDateTime).First();
 
-            var prevStep = _stepIniter.GetStepById(previousConvStepInDb.ConversationStepId);
-            await prevStep.OnGetUserAnswer(Bot, chatId, response);
-            var nextStep = _stepIniter.GetNextStep(prevStep);
+            _stepIniter.SetChatId(chatId);
 
-            if (nextStep == null)
-                return await SaveAndSentStep(chatId, new EndConversationStep());
+            var prevStep = _stepIniter.GetStepById(previousConvStepInDb.ConversationStepId);
+
+            await prevStep.OnGetUserAnswer(response);
+            if (!prevStep.MoveToNextStep)
+            {
+                return null;
+            }
+
+            var nextStep = _stepIniter.GetNextStep(prevStep);
 
             return await SaveAndSentStep(chatId, nextStep);
 
@@ -70,7 +76,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
                 WaitAnswer = step.WaitAnswer
             };
 
-            var msg = await step.SendConversationBotMessage(Bot, chatId);
+            var msg = await step.SendConversationBotMessage();
 
             Bot.DbContext.Add(conv);
 

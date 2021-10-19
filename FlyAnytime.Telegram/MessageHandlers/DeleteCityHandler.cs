@@ -31,10 +31,10 @@ namespace FlyAnytime.Telegram.MessageHandlers
             if (city == null)
                 return;
 
-            var cityLocs = _localizationHelper.GetEntityLocalizations(city);
+            var cityLocs = await _localizationHelper.GetEntityLocalizations(city);
             _dbContext.RemoveRange(cityLocs);
 
-            var chatsWithCurrentCity = _dbContext.Set<ChatSettings>()
+            var chatsWithCurrentCity = _dbContext.Set<Chat>()
                 .Where(x => x.SearchSettings.ChatCity.Id == city.Id)
                 .ToList();
 
@@ -46,10 +46,10 @@ namespace FlyAnytime.Telegram.MessageHandlers
 
             _dbContext.Remove(city);
 
-            foreach (var settings in chatsWithCurrentCity)
+            foreach (var chat in chatsWithCurrentCity)
             {
                 var cityLocal = cityLocs
-                    .FirstOrDefault(x => x.Language.Id == settings.UserLanguage.Id)?.Localization
+                    .FirstOrDefault(x => x.Language.Id == chat.UserLanguage.Id)?.Localization
                     ?? city.Name
                     ;
 
@@ -59,7 +59,7 @@ namespace FlyAnytime.Telegram.MessageHandlers
                     });
 
                 await _botHelper.Bot.SendTextMessageAsync(
-                    settings.Chat.Id,
+                    chat.Id,
                     $"Your city {cityLocal} has been removed. Press button to set up new settings for country and city",
                     replyMarkup: inlineKeyboard
                     );

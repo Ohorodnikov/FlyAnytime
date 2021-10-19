@@ -12,21 +12,20 @@ namespace FlyAnytime.Telegram.Controllers
 {
     public class StartController : BaseInitController<TelegramContext>
     {
-        //[Route("start")]
-        //public IActionResult Index()
-        //{
-        //    return Json("started tg");
-        //}
+        TgWebhook _tgWebhook;
+        public StartController(TgWebhook tgWebhook)
+        {
+            _tgWebhook = tgWebhook;
+        }
 
-        //[Route("init")]
-        //public async Task<IActionResult> Init([FromServices] ICommonSettings settings, [FromServices] TgWebhook tgWebhook)
-        //{
-        //    var gatewayUrl = Request.Headers["GatewayUrl"].ToString();
-        //    settings.ApiGatewayUrl = gatewayUrl;
+        [Route("init")]
+        public override async Task<IActionResult> Init([FromServices] ICommonSettings settings)
+        {
+            await base.Init(settings);
 
-        //    await tgWebhook.StartAsync();
+            await _tgWebhook.StartAsync();
 
-        //    return Ok();
-        //}
+            return Ok();
+        }
     }
 }
