@@ -19,7 +19,7 @@
     },
     "FlyAnytime.Login": {
       "commandName": "Project",
-      "launchBrowser": true,
+      //"launchBrowser": true,
       //"launchUrl": "start",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

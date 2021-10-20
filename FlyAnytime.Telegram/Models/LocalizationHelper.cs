@@ -17,6 +17,7 @@ namespace FlyAnytime.Telegram.Models
 
         Task<IEnumerable<(TEntity entity, LocalizationItem localization)>> FindEntitiesByLocalization<TEntity>(Language language, string searchKey) where TEntity : class, IEntityWithLocalization, new();
 
+        Task<LocalizationItem> GetEntityLocalizationForChat<TEntity>(long chatId, TEntity entity) where TEntity : class, IEntityWithLocalization;
     }
 
     public class LocalizationHelper : ILocalizationHelper
@@ -87,7 +88,6 @@ namespace FlyAnytime.Telegram.Models
             var entTypeDescr = new TEntity().TypeDescriptor;
             var itemIds2LocValue = await _dbContext.Set<LocalizationItem>()
                 .Where(x => x.LanguageId == language.Id && x.EntityDescriptor == entTypeDescr && x.Localization.StartsWith(searchKey))
-                //.Select(x => new { x.ItemId, x.Localization })
                 .ToListAsync()
                 ;
 
@@ -107,6 +107,34 @@ namespace FlyAnytime.Telegram.Models
             }
 
             return res;
+        }
+
+        public async Task<LocalizationItem> GetEntityLocalizationForChat<TEntity>(long chatId, TEntity entity)
+            where TEntity : class, IEntityWithLocalization
+        {
+            var locItems = _dbContext.Set<LocalizationItem>();
+            var chats = _dbContext.Set<Chat>();
+
+            var data = await locItems
+                .Join
+                (
+                    chats,
+                    locIt => locIt.LanguageId,
+                    chat => chat.UserLanguage.Id,
+                    (loc, chat) =>
+                    new { loc, chatId = chat.Id }
+                )
+                .Where
+                (
+                    x =>
+                        x.chatId == chatId
+                        && x.loc.ItemId == entity.Id.ToString()
+                        && x.loc.EntityDescriptor == entity.TypeDescriptor
+                )
+                .Select(x => x.loc)
+                .FirstAsync();
+
+            return data;
         }
     }
 }

@@ -15,7 +15,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
         void SetBotHelperAndChatId(IBotHelper bot, long chatId);
 
         Task<Message> SendConversationBotMessage();
-        Task OnGetUserAnswer(object response);
+        Task OnGetUserAnswer(int sentMessageId, object response);
     }
 
     public abstract class BaseConversationStep : IConversationStep, IEquatable<BaseConversationStep>
@@ -50,7 +50,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             return HashCode.Combine(StepId);
         }
 
-        public abstract Task OnGetUserAnswer(object response);
+        public abstract Task OnGetUserAnswer(int sentMessageId, object response);
         public abstract Task<Message> SendConversationBotMessage();
     }
 }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -51,12 +52,35 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             var parts = answer.Text.Trim().Split(' ');
             var price = parts[0];
 
-            var countryStr = parts[1];
-            var countryCode = countryStr.Split("(")[1].Trim(')');
+            var countryParts = parts[1].Split("(");
+            var countryToName = countryParts[0];
+            var countryToCode = countryParts[1].Trim(')');
 
-            var message = new AddOrUpdateBaseSearchSettingsMessage(ChatId, double.Parse(price), countryCode);
+            var chat = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
+            var countryFrom = chat.SearchSettings.ChatCountry;
+            var cityFrom = chat.SearchSettings.ChatCity;
+
+            var helper = Bot.ServiceProvider.GetService<ILocalizationHelper>();
+            var countryFromLocalization = await helper.GetEntityLocalizationForChat(ChatId, countryFrom);
+            var cityFromLocalization = await helper.GetEntityLocalizationForChat(ChatId, cityFrom);
+
+            var message = new AddOrUpdateBaseSearchSettingsMessage(
+                ChatId, 
+                double.Parse(price), 
+                chat.SearchSettings.ChatCountry.Code,
+                chat.SearchSettings.ChatCity.Code,
+                countryToCode);
 
             Bot.MessageBus.Publish(message);
+
+            var summaryMsg =
+                $@"Great! We will sent **one message** per day with next settings:
+- Fly from {countryFromLocalization.Localization} {cityFromLocalization.Localization}
+- Fly to {countryToName}
+- Ticket costs less than {price}$";
+
+            await Bot.Bot.SendTextMessageAsync(ChatId, summaryMsg, ParseMode.Markdown);
+
         }
     }
 }

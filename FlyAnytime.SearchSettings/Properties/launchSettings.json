@@ -19,8 +19,8 @@
     },
     "FlyAnytime.SearchSettings": {
       "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "weatherforecast",
+      //"launchBrowser": true,
+      "launchUrl": "/start",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },

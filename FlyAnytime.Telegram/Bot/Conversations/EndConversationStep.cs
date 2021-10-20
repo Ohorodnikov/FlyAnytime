@@ -12,7 +12,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
 
         public override bool WaitAnswer => false;
 
-        public override async Task OnGetUserAnswer(object response)
+        public override async Task OnGetUserAnswer(int sentMessageId, object response)
         {
             throw new NotSupportedException();
         }

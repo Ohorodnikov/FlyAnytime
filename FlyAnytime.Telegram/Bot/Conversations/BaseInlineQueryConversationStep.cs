@@ -1,4 +1,5 @@
-﻿using FlyAnytime.Telegram.Models;
+﻿using FlyAnytime.Telegram.Bot.InlineKeyboardButtons;
+using FlyAnytime.Telegram.Models;
 using FlyAnytime.Tools;
 using System;
 using System.Collections.Generic;
@@ -27,7 +28,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
 
     public abstract class BaseInlineQueryConversationStep : BaseConversationStep
     {
-        public override async Task OnGetUserAnswer(object response)
+        public override async Task OnGetUserAnswer(int sentMessageId, object response)
         {
             if (response is InlineQuery inlQ)
             {
@@ -54,6 +55,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             else
             {
                 await OnSelectInlineQuery((Message)response);
+                await InlineKeyboardButtonHelper.HideKeyboard(Bot.Bot, ChatId, sentMessageId);
             }
         }
 

@@ -48,13 +48,14 @@ namespace FlyAnytime.Telegram.Bot.Conversations
         {
             var previousConvStepInDb = Bot.DbContext.Set<ChatConversation>()
                 .Where(x => x.Chat.Id == chatId && x.ConversationId == ConversationId)
-                .OrderByDescending(x => x.CreationDateTime).First();
+                .OrderByDescending(x => x.CreationDateTime)
+                .First();
 
             _stepIniter.SetChatId(chatId);
 
             var prevStep = _stepIniter.GetStepById(previousConvStepInDb.ConversationStepId);
 
-            await prevStep.OnGetUserAnswer(response);
+            await prevStep.OnGetUserAnswer(previousConvStepInDb.MessageId, response);
             if (!prevStep.MoveToNextStep)
             {
                 return null;
@@ -77,6 +78,8 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             };
 
             var msg = await step.SendConversationBotMessage();
+
+            conv.MessageId = msg.MessageId;
 
             Bot.DbContext.Add(conv);
 

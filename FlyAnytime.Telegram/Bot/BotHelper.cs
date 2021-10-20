@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Telegram.Bot;
+using Telegram.Bot.Types.Enums;
 
 namespace FlyAnytime.Telegram.Bot
 {
@@ -103,9 +104,13 @@ namespace FlyAnytime.Telegram.Bot
                 MessageBus.Publish(regNewUser);
             }
 
-            await Bot.SendTextMessageAsync(chatId, "Welcome to bot!");
 
-            //TODO: send /help text after welcome
+            var welcomeMsg = @"Hello!
+This bot was created to find cheapest avia tickets from your location to any countries you want to.
+Please, select your **language * *and * *country * *with * *city * *.
+Then you need to write** country you want to fly to** and set** max ticket price**and we will send cheapes tickets ones a day.";
+
+            await Bot.SendTextMessageAsync(chatId, welcomeMsg, ParseMode.Markdown);
 
             return await new UpdateSettingsFullConversation(this).Start(chatId);
         }
