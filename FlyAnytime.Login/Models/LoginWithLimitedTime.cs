@@ -9,8 +9,8 @@ namespace FlyAnytime.Login.Models
 {
     public abstract class LoginWithLimitedTime : BaseLogin
     {
-        public virtual DateTime CreationDateTime { get; set; }
-        public virtual DateTime ExpireDateTime { get; set; }
+        public virtual long CreationDateTime { get; set; }
+        public virtual long ExpireDateTime { get; set; }
     }
 
     public abstract class LoginWithLimitedTimeMapping<TLoginModel> : EntityMap<TLoginModel, long>

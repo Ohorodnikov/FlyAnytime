@@ -5,6 +5,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace FlyAnytime.SearchSettings.Repository
@@ -17,6 +18,8 @@ namespace FlyAnytime.SearchSettings.Repository
 
         Task<IMongoRepoResult<TEntity>> GetById(ObjectId id);
         Task<IMongoRepoResult<TEntity>> GetBy(string propName, string value);
+        Task<IMongoRepoResult<TEntity>> GetBy(Expression<Func<TEntity, object>> propExpr, string value);
+
 
         Task<IMongoRepoResult<TEntity>> TryCreate(TEntity entity);
 

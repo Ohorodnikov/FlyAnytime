@@ -15,7 +15,7 @@ namespace FlyAnytime.Telegram.Services
     public interface IWebhook
     {
         Task StartAsync(/*CancellationToken cancellationToken*/);
-        Task StopAsync(CancellationToken cancellationToken);
+        Task StopAsync(/*CancellationToken cancellationToken*/);
     }
 
     public class TgWebhook : IWebhook
@@ -42,23 +42,18 @@ namespace FlyAnytime.Telegram.Services
 
             var webhookAddress = @$"{_settings.Value.ApiGatewayUrl}/tgbot/bot/{_botConfig.BotToken}";
             _logger.LogInformation("Setting webhook: ", webhookAddress);
-            await botClient.SetWebhookAsync(
-                url: webhookAddress
-                //,
-                //,
-                //allowedUpdates: Array.Empty<UpdateType>(),
-                //cancellationToken: cancellationToken
-                );
+
+            await botClient.SetWebhookAsync(url: webhookAddress);
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken)
+        public async Task StopAsync(/*CancellationToken cancellationToken*/)
         {
             using var scope = _services.CreateScope();
             var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
             // Remove webhook upon app shutdown
             _logger.LogInformation("Removing webhook");
-            await botClient.DeleteWebhookAsync(cancellationToken: cancellationToken);
+            await botClient.DeleteWebhookAsync(/*cancellationToken: cancellationToken*/);
         }
     }
 }

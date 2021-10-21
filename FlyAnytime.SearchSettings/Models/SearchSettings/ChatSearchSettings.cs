@@ -16,6 +16,8 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
 
         public DateSettings DateSettings { get; set; }
 
+        public List<Schedule> Schedules { get; set; }
+
         public bool IsActive { get; set; }
     }
 

@@ -66,7 +66,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 
             var message = new AddOrUpdateBaseSearchSettingsMessage(
                 ChatId, 
-                double.Parse(price), 
+                decimal.Parse(price), 
                 chat.SearchSettings.ChatCountry.Code,
                 chat.SearchSettings.ChatCity.Code,
                 countryToCode);

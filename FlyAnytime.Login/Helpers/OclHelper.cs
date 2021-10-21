@@ -1,5 +1,6 @@
 ﻿using FlyAnytime.Login.EF;
 using FlyAnytime.Login.Models;
+using FlyAnytime.Tools;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -28,11 +29,11 @@ namespace FlyAnytime.Login.Helpers
             if (user == null)
                 return null;
 
-            var now = DateTime.UtcNow;
+            var now = DateTimeHelper.UnixNow;
             var ocl = new OneClickLogin
             {
                 CreationDateTime = now,
-                ExpireDateTime = now.AddSeconds(lifetimeInSec),
+                ExpireDateTime = now + lifetimeInSec,
                 User = user,
                 LoginUrl = Guid.NewGuid().ToString().Replace("-", "")
             };

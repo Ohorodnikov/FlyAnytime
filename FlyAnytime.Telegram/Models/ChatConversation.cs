@@ -1,5 +1,6 @@
 ﻿using FlyAnytime.Core.EfContextBase;
 using FlyAnytime.Core.Entity;
+using FlyAnytime.Tools;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace FlyAnytime.Telegram.Models
         public virtual Guid ConversationId { get; set; }
         public virtual Guid ConversationStepId { get; set; }
         public virtual int MessageId { get; set; }
-        public virtual DateTime CreationDateTime { get; set; } = DateTime.UtcNow;
+        public virtual long CreationDateTime { get; set; } = DateTimeHelper.UnixNow;
         public virtual bool WaitAnswer { get; set; } = true;
     }
 
@@ -29,7 +30,7 @@ namespace FlyAnytime.Telegram.Models
             //mapBuilder.Property(x => x.Chat).IsRequired();
             mapBuilder.Property(x => x.ConversationId).IsRequired();
             mapBuilder.Property(x => x.ConversationStepId).IsRequired();
-            mapBuilder.Property(x => x.MessageId).IsRequired();
+            //mapBuilder.Property(x => x.MessageId).IsRequired();
         }
     }
 }

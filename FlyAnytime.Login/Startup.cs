@@ -77,7 +77,7 @@ namespace FlyAnytime.Login
             var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
 
             eventBus.Subscribe<GetLoginLinkRequestMessage, GetLoginLinkHandler, GetLoginLinkResponseMessage>();
-            eventBus.Subscribe<RegisterNewUserMessage, RegisterNewUserHandler>();
+            eventBus.Subscribe<RegisterNewChatMessage, RegisterNewUserHandler>();
         }
     }
 }

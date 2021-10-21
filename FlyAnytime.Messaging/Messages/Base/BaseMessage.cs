@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FlyAnytime.Tools;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -20,7 +21,7 @@ namespace FlyAnytime.Messaging.Messages
     public abstract class BaseMessage
     {
         public Guid MessageId { get; } = Guid.NewGuid();
-        public DateTime CreationDateTime { get; } = DateTime.UtcNow;
+        public long CreationDateTime { get; } = DateTimeHelper.UnixNow;
     }
 
     public abstract class BaseResponseMessage<TRequestMessage> : BaseMessage

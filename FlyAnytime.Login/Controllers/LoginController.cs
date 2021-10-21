@@ -2,6 +2,7 @@
 using FlyAnytime.Login.Helpers;
 using FlyAnytime.Login.JWT;
 using FlyAnytime.Login.Models;
+using FlyAnytime.Tools;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -62,7 +63,7 @@ namespace FlyAnytime.Login.Controllers
             if (userLoginInfo == null)
                 return Json("Not valid url");
 
-            var now = DateTime.UtcNow;
+            var now = DateTimeHelper.UnixNow;
 
             if (userLoginInfo.ExpireDateTime <= now)
                 return Json("Url expired. Generate new login url");

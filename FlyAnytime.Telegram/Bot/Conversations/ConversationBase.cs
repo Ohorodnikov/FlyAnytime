@@ -79,7 +79,10 @@ namespace FlyAnytime.Telegram.Bot.Conversations
 
             var msg = await step.SendConversationBotMessage();
 
-            conv.MessageId = msg.MessageId;
+            if (msg != null)
+            {
+                conv.MessageId = msg.MessageId;
+            }
 
             Bot.DbContext.Add(conv);
 

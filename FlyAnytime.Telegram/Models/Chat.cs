@@ -16,8 +16,8 @@ namespace FlyAnytime.Telegram.Models
         public virtual bool IsPaused { get; set; }
         public virtual bool IsRemovedFromChat { get; set; }
 
-        public virtual DateTime CreationDateTime { get; set; }
-        public virtual DateTime? RestartDateTime { get; set; }
+        public virtual long CreationDateTime { get; set; }
+        public virtual long? RestartDateTime { get; set; }
 
         public virtual Language UserLanguage { get; set; }
         public virtual ChatSearchSettingsBase SearchSettings { get; set; }

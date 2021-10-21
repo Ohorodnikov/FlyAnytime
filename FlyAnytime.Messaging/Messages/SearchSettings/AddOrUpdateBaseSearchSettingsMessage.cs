@@ -8,7 +8,7 @@ namespace FlyAnytime.Messaging.Messages.SearchSettings
     {
         public AddOrUpdateBaseSearchSettingsMessage(
             long chatId, 
-            double priceMax, 
+            decimal priceMax,
             string countryFromFlyCode,
             string cityFromFlyCode,
             string countryToFlyCode)
@@ -16,14 +16,14 @@ namespace FlyAnytime.Messaging.Messages.SearchSettings
             ChatId = chatId;
             PriceMax = priceMax;
             CountryFromFlyCode = countryFromFlyCode;
-            CityToFlyCode = cityFromFlyCode;
+            CityFromFlyCode = cityFromFlyCode;
             CountryToFlyCode = countryToFlyCode;
         }
 
         public long ChatId { get; private set; }
-        public double PriceMax { get; private set; }
+        public decimal PriceMax { get; private set; }
         public string CountryFromFlyCode { get; private set; }
-        public string CityToFlyCode { get; private set; }
+        public string CityFromFlyCode { get; private set; }
         public string CountryToFlyCode { get; private set; }
     }
 }

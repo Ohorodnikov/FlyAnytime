@@ -6,6 +6,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -45,6 +46,12 @@ namespace FlyAnytime.SearchSettings.Repository
 
             return new MongoRepoResult<TEntity>(entity);
         }
+
+        public async Task<IMongoRepoResult<TEntity>> GetBy(Expression<Func<TEntity, object>> propExpr, string value)
+        {
+            return await GetBy(propExpr.GetStringBody(), value);
+        }
+
         public async Task<IMongoRepoResult<TEntity>> GetBy(string propName, string value)
         {
             var flt = Builders<TEntity>.Filter;
@@ -90,6 +97,49 @@ namespace FlyAnytime.SearchSettings.Repository
             }
         }
 
+        private void SetIdsForReferenceRoot<TEnt>(TEnt entity)
+        {
+            var entType = entity.GetType();
+            var rootProps = entType.GetAllPropsOfType(typeof(IMongoRootEntity));
+
+            foreach (var prop in rootProps)
+            {
+                var v = prop.GetValue(entity);
+                if (v == null)
+                {
+                    continue;
+                }
+
+                if (v is IMongoRootEntity root)
+                {
+                    var idProp = entType.GetProperty($"{prop.Name}Id");
+                    idProp.SetValue(entity, root.Id);
+                }
+                else if (v is IEnumerable<IMongoRootEntity> rootList)
+                {
+                    var idProp = entType.GetProperty($"{prop.Name}Ids");
+
+                    var idList = new List<ObjectId>(rootList.Count());
+                    foreach (var rootItem in rootList)
+                    {
+                        idList.Add(rootItem.Id);
+                    }
+                }
+            }
+
+            var internalProps = entType.GetAllPropsOfType(typeof(IMongoInternalEntity));
+
+            foreach (var intProp in internalProps)
+            {
+                var v = intProp.GetValue(entity);
+                if (v is IMongoInternalEntity value)
+                    SetIdsForReferenceRoot(value);
+                else if (v is IEnumerable<IMongoInternalEntity> internalList)
+                    foreach (var val in internalList)
+                        SetIdsForReferenceRoot(val);
+            }
+        }
+
         private IMongoRepoResult<TEntity> Validate(TEntity entity)
         {
             if (_validator != null)
@@ -111,6 +161,8 @@ namespace FlyAnytime.SearchSettings.Repository
                 return new MongoRepoResult<TEntity>(errModel);
             }
             SetIdsForInternalEntities(entity);
+
+            SetIdsForReferenceRoot(entity);
 
             var res = Validate(entity);
             if (!res.Success)

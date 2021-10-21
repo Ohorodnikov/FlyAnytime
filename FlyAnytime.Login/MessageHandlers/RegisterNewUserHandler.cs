@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace FlyAnytime.Login.MessageHandlers
 {
-    public class RegisterNewUserHandler : IMessageHandler<RegisterNewUserMessage>
+    public class RegisterNewUserHandler : IMessageHandler<RegisterNewChatMessage>
     {
         private readonly LoginContext _dbContext;
 
@@ -16,7 +16,7 @@ namespace FlyAnytime.Login.MessageHandlers
         {
             _dbContext = dbContext;
         }
-        public async Task Handle(RegisterNewUserMessage message)
+        public async Task Handle(RegisterNewChatMessage message)
         {
             var user = new User
             {

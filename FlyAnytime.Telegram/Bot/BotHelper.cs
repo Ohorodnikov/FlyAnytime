@@ -3,6 +3,7 @@ using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Telegram.Bot.Conversations;
 using FlyAnytime.Telegram.EF;
 using FlyAnytime.Telegram.Models;
+using FlyAnytime.Tools;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,9 +52,9 @@ namespace FlyAnytime.Telegram.Bot
                 var restartDate = savedChat.RestartDateTime;
                 if(restartDate.HasValue)
                 {
-                    var now = DateTime.UtcNow;
+                    var now = DateTimeHelper.UnixNow;
 
-                    if (now - restartDate <= new TimeSpan(0, 0, 10)) //if restart chat has 2 actions: onRestart and /start
+                    if (now - restartDate <= 10) //if restart chat has 2 actions: onRestart and /start
                         return null;
                 }
                 return await Bot.SendTextMessageAsync(chatId, "This chat is already registered");
@@ -64,7 +65,7 @@ namespace FlyAnytime.Telegram.Bot
             var dbChat = new Chat()
             {
                 Id = chat.Id,
-                CreationDateTime = DateTime.UtcNow,
+                CreationDateTime = DateTimeHelper.UnixNow,
                 IsGroup = false,
                 HasAdminRights = false,
                 Username = chat.Username,
@@ -75,20 +76,29 @@ namespace FlyAnytime.Telegram.Bot
 
             var user = await DbContext.Set<User>().FindAsync(chat.Id);
 
-            RegisterNewUserMessage regNewUser = null;
+            RegisterNewChatMessage regNewUser = null;
             if (user == null)
             {
                 user = new User
                 {
                     Id = chat.Id,
-                    CreationDateTime = DateTime.UtcNow,
+                    CreationDateTime = DateTimeHelper.UnixNow,
                     FirstName = chat.FirstName,
                     LastName = chat.LastName,
                     UserName = chat.Username
                 };
-
-                regNewUser = new RegisterNewUserMessage(user.Id, user.FirstName, user.LastName, user.UserName);
             }
+
+            regNewUser = new RegisterNewChatMessage(
+                    user.Id,
+                    user.FirstName,
+                    user.LastName,
+                    user.UserName,
+
+                    dbChat.Id,
+                    dbChat.Title,
+                    dbChat.IsGroup
+                    );
 
             dbChat.ChatOwner = user;
 
@@ -127,7 +137,7 @@ Then you need to write** country you want to fly to** and set** max ticket price
 
             savedChat.IsPaused = true;
             savedChat.IsRemovedFromChat = false;
-            savedChat.RestartDateTime = DateTime.UtcNow;
+            savedChat.RestartDateTime = DateTimeHelper.UnixNow;
 
 
             DbContext.Set<Chat>().Update(savedChat);

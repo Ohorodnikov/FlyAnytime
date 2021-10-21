@@ -17,7 +17,7 @@ namespace FlyAnytime.Telegram.Models
         public virtual string LastName { get; set; }
         public virtual string UserName { get; set; }
 
-        public virtual DateTime CreationDateTime { get; set; }
+        public virtual long CreationDateTime { get; set; }
     }
 
     public class UserMapping : EntityMap<User, long>

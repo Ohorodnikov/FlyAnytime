@@ -1,5 +1,9 @@
 using FlyAnytime.Core;
+using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
+using FlyAnytime.Messaging.Messages;
+using FlyAnytime.Messaging.Messages.SearchSettings;
+using FlyAnytime.SearchSettings.MessageHandlers;
 using FlyAnytime.SearchSettings.Models;
 using FlyAnytime.SearchSettings.MongoDb;
 using FlyAnytime.SearchSettings.MongoDb.Mapping;
@@ -77,6 +81,16 @@ namespace FlyAnytime.SearchSettings
                 endpoints.MapControllers();
                 endpoints.MapDefaultControllerRoute();
             });
+
+            SubscribeOnMessages(app);
+        }
+
+        private void SubscribeOnMessages(IApplicationBuilder app)
+        {
+            var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+
+            eventBus.Subscribe<RegisterNewChatMessage, RegisterNewChatHandler>();
+            eventBus.Subscribe<AddOrUpdateBaseSearchSettingsMessage, AddOrUpdateBaseSearchSettingsHandler>();
         }
     }
 }

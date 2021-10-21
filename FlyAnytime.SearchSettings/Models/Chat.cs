@@ -59,7 +59,7 @@ namespace FlyAnytime.SearchSettings.Models
             if (entity.ChatOwnerId == ObjectId.Empty)
             {
                 isValid = false;
-                modelError.AddValidationError(x => x.ChatId, "User Id must be filled");
+                modelError.AddValidationError(x => x.ChatOwnerId, "User Id must be filled");
             }
 
             return isValid;

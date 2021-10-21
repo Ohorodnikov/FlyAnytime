@@ -16,6 +16,9 @@ namespace FlyAnytime.SearchSettings.Models.Location
         public string Code { get; set; }
         public string Name { get; set; }
 
+        public string CurrencyCode { get; set; }
+        public string DefSearchCurrencyCode { get; set; }
+
         public IEnumerable<LocalizationItem> Localizations { get; set; }
     }
 
