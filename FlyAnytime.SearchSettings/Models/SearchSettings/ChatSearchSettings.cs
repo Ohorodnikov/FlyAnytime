@@ -19,6 +19,7 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
         public List<Schedule> Schedules { get; set; }
 
         public bool IsActive { get; set; }
+        public string Title { get; set; }
     }
 
     public class ChatSearchSettingsMap : InternalEntityMap<ChatSearchSettings>

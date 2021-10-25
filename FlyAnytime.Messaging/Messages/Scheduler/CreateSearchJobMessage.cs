@@ -1,10 +1,11 @@
 ﻿using FlyAnytime.Core.Enums;
+using Newtonsoft.Json;
 using System;
 using System.Text;
 
 namespace FlyAnytime.Messaging.Messages.Scheduler
 {
-    public struct FlyDirection
+    public class FlyDirection
     {
         public FlyDirection(string cityFlyFrom, string airportsFlyTo)
         {
@@ -16,7 +17,7 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
         public string AirportsFlyTo { get; private set; }
     }
 
-    public struct PriceSettings
+    public class PriceSettings
     {
         public PriceSettings(SearchPriceSettingsType type, decimal amount, string currency)
         {
@@ -30,7 +31,7 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
         public string Currency { get; }
     }
 
-    public struct TripDuration
+    public class TripDuration
     {
         public TripDuration(int daysMin, int daysMax)
         {
@@ -42,49 +43,57 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
         public int DaysMax { get; }
     }
 
-    public struct ScheduleSettings
+    public class ScheduleSettings
     {
-        public ScheduleSettings(ScheduleIntervalType intervalType, string customSchedule)
+        [JsonConstructor]
+        protected ScheduleSettings(
+            string id, bool isActive, ScheduleIntervalType type, 
+            byte intervalValue, byte dayHourAt, byte dayMinuteAt, string customSchedule) 
+            : this(id, isActive, type)
         {
-            if (intervalType != ScheduleIntervalType.Custom)
-                throw new ArgumentOutOfRangeException(nameof(intervalType), "This ctor is only for interval type Day");
+            IntervalValue = intervalValue;
+            Hour = dayHourAt;
+            Minute = dayMinuteAt;
 
             CustomSchedule = customSchedule;
-            IntervalType = intervalType;
+        }
+
+        private ScheduleSettings(string id, bool isActive, ScheduleIntervalType type)
+        {
+            IntervalType = type;
+            Id = id;
+            IsActive = isActive;
+        }
+        /// <summary>
+        /// Custom Schedule only
+        /// </summary>
+        /// <param name="intervalType"></param>
+        /// <param name="customSchedule"></param>
+        public ScheduleSettings(string id, bool isActive, string customSchedule) : this(id, isActive, ScheduleIntervalType.Custom)
+        {
+            CustomSchedule = customSchedule;
 
             IntervalValue = 0;
             Hour = 0;
             Minute = 0;
-
         }
 
-        public ScheduleSettings(ScheduleIntervalType intervalType, byte intervalValue)
+        public ScheduleSettings(string id, bool isActive, byte intervalHoursValue) : this(id, isActive, ScheduleIntervalType.Hour)
         {
-            if (intervalType != ScheduleIntervalType.Hour)
-                throw new ArgumentOutOfRangeException(nameof(intervalType), "This ctor is only for interval type Hour");
-
-            IntervalType = intervalType;
-            IntervalValue = intervalValue;
-
-            Hour = 0;
-            Minute = 0;
-            CustomSchedule = null;
+            IntervalValue = intervalHoursValue;
         }
 
-        public ScheduleSettings(ScheduleIntervalType intervalType, byte intervalValue, byte hour, byte minute)
+        public ScheduleSettings(string id, bool isActive, byte intervalDaysValue, byte dayHourAt, byte dayMinuteAt) : this(id, isActive, ScheduleIntervalType.Day)
         {
-            if (intervalType != ScheduleIntervalType.Day)
-                throw new ArgumentOutOfRangeException(nameof(intervalType), "This ctor is only for interval type Day");
-
-            IntervalType = intervalType;
-            IntervalValue = intervalValue;
-            Hour = hour;
-            Minute = minute;
-
-            CustomSchedule = null;
+            IntervalValue = intervalDaysValue;
+            Hour = dayHourAt;
+            Minute = dayMinuteAt;
         }
 
+        public string Id { get; }
+        public bool IsActive { get; }
         public ScheduleIntervalType IntervalType { get; }
+
         public byte IntervalValue { get; }
         public byte Hour { get; }
         public byte Minute { get; }

@@ -52,9 +52,9 @@ namespace FlyAnytime.Messaging
             return _connection.CreateModel();
         }
 
-        private string GetChannelKey<TMessage>()
+        private string GetChannelKey(Type msgType)
         {
-            return typeof(TMessage).Name;
+            return msgType.Name;
         }
 
         private byte[] Obj2Bytes<TObj>(TObj obj) => Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(obj));
@@ -93,7 +93,7 @@ namespace FlyAnytime.Messaging
             where TMessage : BaseMessage
             where THandler : IMessageHandler
         {
-            var chatName = GetChannelKey<TMessage>();
+            var chatName = GetChannelKey(typeof(TMessage));
 
             QueueDeclare(chatName);
             _consumerChannel.BasicQos(0, 1, false);
@@ -167,7 +167,7 @@ namespace FlyAnytime.Messaging
 
         public void Publish<TMessageSend>(TMessageSend message) where TMessageSend : BaseMessage
         {
-            var chatName = GetChannelKey<TMessageSend>();
+            var chatName = GetChannelKey(message.GetType());
             QueueDeclare(chatName);
             DoPublish(chatName, message);
         }
@@ -176,7 +176,7 @@ namespace FlyAnytime.Messaging
             where TMessageSend : BaseMessage
             where TMessageResult : BaseResponseMessage<TMessageSend>
         {
-            var chat = GetChannelKey<TMessageSend>();
+            var chat = GetChannelKey(message.GetType());
             QueueDeclare(chat);
 
             var replyQueueName = _consumerChannel.QueueDeclare("", true, false, false, null).QueueName;

@@ -63,7 +63,7 @@ namespace FlyAnytime.SearchSettings.Controllers
         [HttpGet]
         public virtual async Task<IActionResult> GetBy(string propName, string value)
         {
-            var getResult = await _repository.GetBy(propName, value);
+            var getResult = await _repository.GetOneBy(propName, value);
 
             return GetImpl(getResult);
         }

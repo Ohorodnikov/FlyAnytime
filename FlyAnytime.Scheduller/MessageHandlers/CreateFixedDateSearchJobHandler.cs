@@ -7,7 +7,7 @@ using Quartz;
 
 namespace FlyAnytime.Scheduler.MessageHandlers
 {
-    class CreateFixedDateSearchJobHandler : BaseCreateSearchJobHandler<CreateFixedDateSearchJobMessage, FixedDateSearchJob, FixedDateSearchJobData>
+    public class CreateFixedDateSearchJobHandler : BaseCreateSearchJobHandler<CreateFixedDateSearchJobMessage, FixedDateSearchJob, FixedDateSearchJobData>
     {
         public CreateFixedDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext) 
             : base(scheduler, dbContext) { }

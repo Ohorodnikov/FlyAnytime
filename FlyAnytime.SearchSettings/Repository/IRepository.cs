@@ -17,9 +17,11 @@ namespace FlyAnytime.SearchSettings.Repository
         long Count { get; }
 
         Task<IMongoRepoResult<TEntity>> GetById(ObjectId id);
-        Task<IMongoRepoResult<TEntity>> GetBy(string propName, string value);
-        Task<IMongoRepoResult<TEntity>> GetBy(Expression<Func<TEntity, object>> propExpr, string value);
+        Task<IMongoRepoResult<TEntity>> GetOneBy(string propName, string value);
+        Task<IMongoRepoResult<TEntity>> GetOneBy(Expression<Func<TEntity, bool>> propExpr);
 
+        Task<IEnumerable<TEntity>> Where(Expression<Func<TEntity, bool>> propExpr);
+        Task<IEnumerable<TEntity>> GetAllBy(string propName, string value);
 
         Task<IMongoRepoResult<TEntity>> TryCreate(TEntity entity);
 

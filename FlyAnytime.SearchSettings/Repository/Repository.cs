@@ -35,24 +35,37 @@ namespace FlyAnytime.SearchSettings.Repository
                 .Find(ent => ent.Id == id)
                 .FirstOrDefaultAsync();
 
-
-            if (entity == null)
-            {
-                var errModel = new EntityErrorModel<TEntity>();
-                errModel.AddValidationError(x => x.Id, "Entity was not found!");
-
-                return new MongoRepoResult<TEntity>(errModel);
-            }
-
-            return new MongoRepoResult<TEntity>(entity);
+            return WrapAndReturn(entity);
         }
 
-        public async Task<IMongoRepoResult<TEntity>> GetBy(Expression<Func<TEntity, object>> propExpr, string value)
+        public async Task<IEnumerable<TEntity>> Where(Expression<Func<TEntity, bool>> propExpr)
         {
-            return await GetBy(propExpr.GetStringBody(), value);
+            var data = await Set.FindAsync(propExpr);
+
+            return await data.ToListAsync();
         }
 
-        public async Task<IMongoRepoResult<TEntity>> GetBy(string propName, string value)
+        public async Task<IEnumerable<TEntity>> GetAllBy(string propName, string value)
+        {
+            var flt = Builders<TEntity>.Filter;
+
+            var filter = flt.Eq(propName, value);
+
+            return await Set
+                .Find(filter)
+                .ToListAsync();
+        }
+
+        public async Task<IMongoRepoResult<TEntity>> GetOneBy(Expression<Func<TEntity, bool>> propExpr)
+        {
+            var e = await Set.FindAsync(propExpr);
+
+            var ent = await e.FirstOrDefaultAsync();
+
+            return WrapAndReturn(ent);
+        }
+
+        public async Task<IMongoRepoResult<TEntity>> GetOneBy(string propName, string value)
         {
             var flt = Builders<TEntity>.Filter;
 
@@ -62,6 +75,11 @@ namespace FlyAnytime.SearchSettings.Repository
                 .Find(filter)
                 .FirstOrDefaultAsync();
 
+            return WrapAndReturn(entity);
+        }
+
+        private MongoRepoResult<TEntity> WrapAndReturn(TEntity entity)
+        {
             if (entity == null)
             {
                 var errModel = new EntityErrorModel<TEntity>();
@@ -71,6 +89,13 @@ namespace FlyAnytime.SearchSettings.Repository
             }
 
             return new MongoRepoResult<TEntity>(entity);
+        }
+
+        private void PrepareToSave<TEnt>(TEnt entity)
+            where TEnt : IMongoEntity
+        {
+            SetIdsForInternalEntities(entity);
+            SetIdsForReferenceRoot(entity);
         }
 
         private void SetIdsForInternalEntities<TEnt>(TEnt entity)
@@ -98,6 +123,7 @@ namespace FlyAnytime.SearchSettings.Repository
         }
 
         private void SetIdsForReferenceRoot<TEnt>(TEnt entity)
+            where TEnt : IMongoEntity
         {
             var entType = entity.GetType();
             var rootProps = entType.GetAllPropsOfType(typeof(IMongoRootEntity));
@@ -124,6 +150,8 @@ namespace FlyAnytime.SearchSettings.Repository
                     {
                         idList.Add(rootItem.Id);
                     }
+
+                    idProp.SetValue(entity, idList);
                 }
             }
 
@@ -160,9 +188,8 @@ namespace FlyAnytime.SearchSettings.Repository
                 errModel.AddValidationError("Entity", "Entity is null");
                 return new MongoRepoResult<TEntity>(errModel);
             }
-            SetIdsForInternalEntities(entity);
 
-            SetIdsForReferenceRoot(entity);
+            PrepareToSave(entity);
 
             var res = Validate(entity);
             if (!res.Success)
@@ -202,7 +229,7 @@ namespace FlyAnytime.SearchSettings.Repository
             if (!getResult.Success)
                 return getResult;
 
-            SetIdsForInternalEntities(entity);
+            PrepareToSave(entity);
 
             var res = Validate(entity);
             if (!res.Success)

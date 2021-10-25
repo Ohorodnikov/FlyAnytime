@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace FlyAnytime.Scheduler.MessageHandlers
 {
-    class CreateDynamicDateSearchJobHandler : BaseCreateSearchJobHandler<CreateDynamicDateSearchJobMessage, DynamicDateSearchJob, DynamicDateSearchJobData>
+    public class CreateDynamicDateSearchJobHandler : BaseCreateSearchJobHandler<CreateDynamicDateSearchJobMessage, DynamicDateSearchJob, DynamicDateSearchJobData>
     {
         public CreateDynamicDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext) 
             : base(scheduler, dbContext) { }

@@ -20,7 +20,7 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
 
         public async Task Handle(RegisterNewChatMessage message)
         {
-            var userResult = await _userRepo.GetBy(x => x.UserId, message.UserId.ToString());
+            var userResult = await _userRepo.GetOneBy(x => x.UserId == message.UserId.ToString());
 
             var savedUser = userResult.Entity;
             if (!userResult.Success)
@@ -36,23 +36,19 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
                 var saveResult = await _userRepo.TryCreate(user);
 
                 if (!saveResult.Success)
-                {
                     return;
-                }
 
                 savedUser = saveResult.Entity;
             }
 
-            var chatResult = await _chatRepo.GetBy(x => x.ChatId, message.ChatId.ToString());
+            var chatResult = await _chatRepo.GetOneBy(x => x.ChatId == message.ChatId);
 
             if (chatResult.Success)
-            {
                 return;
-            }
 
             var chat = new Chat
             {
-                ChatId = message.ChatId.ToString(),
+                ChatId = message.ChatId,
                 ChatOwner = savedUser,
                 IsGroup = message.IsGroup,
                 Title = message.ChatName

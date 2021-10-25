@@ -20,7 +20,7 @@ namespace FlyAnytime.SearchSettings.MongoDb.Validation
             var errModel = new EntityErrorModel<TEntity>();
 
             var isValid = Validate(entity, errModel);
-
+            //TODO: validate child props
             return (isValid: isValid, errorModel: errModel);
         }
 

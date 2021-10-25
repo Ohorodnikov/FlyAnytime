@@ -8,7 +8,7 @@ using System.Text;
 
 namespace FlyAnytime.Scheduler.Models
 {
-    public class BaseSearchJobData : Entity<long>
+    public abstract class BaseSearchJobData : Entity<long>
     {
         public long ChatId { get; set; }
         public string CityFlyFrom { get; set; }

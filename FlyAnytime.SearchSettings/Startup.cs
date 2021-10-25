@@ -3,6 +3,7 @@ using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
 using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Messaging.Messages.SearchSettings;
+using FlyAnytime.SearchSettings.Helpers;
 using FlyAnytime.SearchSettings.MessageHandlers;
 using FlyAnytime.SearchSettings.Models;
 using FlyAnytime.SearchSettings.MongoDb;
@@ -49,8 +50,10 @@ namespace FlyAnytime.SearchSettings
             services.AddTransient<IMongoDbContext, MongoDbContext>();
 
             services.AddAllGenericImplementations(typeof(IValidator<>), services.AddTransient);
-            //services.AddAllGenericImplementations(typeof(IRepository<>), services.AddTransient);
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
+
+            services.AddTransient<IPublishEditChatSettingsHelper, PublishEditChatSettingsHelper>();
+            services.AddTransient<IChatSettingsHelper, ChatSettingsHelper>();
 
             services.AddAutoMapper(typeof(Startup));
 

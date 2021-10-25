@@ -1,6 +1,7 @@
 ﻿using FlyAnytime.Core.Enums;
 using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Messaging.Messages.SearchSettings;
+using FlyAnytime.SearchSettings.Helpers;
 using FlyAnytime.SearchSettings.Models;
 using FlyAnytime.SearchSettings.Models.Location;
 using FlyAnytime.SearchSettings.Models.SearchSettings;
@@ -18,14 +19,23 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
     {
         IRepository<Chat> _chatRepo;
         IRepository<Country> _countryRepo;
+        IRepository<City> _cityRepo;
+        IRepository<Airport> _airRepo;
+        IPublishEditChatSettingsHelper _eventHelper;
 
         public AddOrUpdateBaseSearchSettingsHandler(
             IRepository<Chat> chatRepo,
-            IRepository<Country> countryRepo
+            IRepository<Country> countryRepo,
+            IRepository<City> cityRepo,
+            IRepository<Airport> airRepo,
+            IPublishEditChatSettingsHelper eventHelper
             )
         {
             _chatRepo = chatRepo;
             _countryRepo = countryRepo;
+            _cityRepo = cityRepo;
+            _airRepo = airRepo;
+            _eventHelper = eventHelper;
         }
 
         public async Task Handle(AddOrUpdateBaseSearchSettingsMessage message)
@@ -33,26 +43,24 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
             var cityFlyFrom = message.CityFromFlyCode;
             var countryFlyTo = message.CountryToFlyCode;
 
-            var chatResult = await _chatRepo.GetBy(chat => chat.ChatId, message.ChatId.ToString());
+            var chatResult = await _chatRepo.GetOneBy(chat => chat.ChatId == message.ChatId);
 
             if (!chatResult.Success)
-            {
                 return;
-            }
 
             var chat = chatResult.Entity;
 
             chat.SearchSettings ??= new List<ChatSearchSettings>();
 
-            var settingsCount = chat.SearchSettings.Where(x => x.IsActive).Count();
+            var settingsActive = chat.SearchSettings.Where(x => x.IsActive).ToList();
 
-            if (settingsCount == 0)
+            async Task AddDef()
             {
                 var defCurr = await GetDefaultCountryCurrency(message.CountryFromFlyCode);
                 var defPriceSett = CreatePriceSettings(message.PriceMax, defCurr);
-                var flyTo = await _countryRepo.GetBy(x => x.Code, message.CountryToFlyCode);
+                var flyTo = await _countryRepo.GetOneBy(x => x.Code == message.CountryToFlyCode);
 
-                var set = GetDefaultSettings(defPriceSett, flyTo.Entity);
+                var set = await GetDefaultSettings(defPriceSett, flyTo.Entity);
 
                 var resList = chat.SearchSettings.ToList();
 
@@ -60,11 +68,29 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
 
                 chat.SearchSettings = resList;
 
-                var updateRes = await _chatRepo.TryReplace(chat);
-            }
-            else if (settingsCount == 1)
-            {
+                var flyFrom = await _cityRepo.GetOneBy(x => x.Code == message.CityFromFlyCode);
 
+                chat.FlyFrom = flyFrom.Entity;
+
+                var updateRes = await _chatRepo.TryReplace(chat);
+
+                if (updateRes.Success)
+                {
+                    await _eventHelper.SendUpdatedSettingsEvent(updateRes.Entity);
+                }
+            }
+
+            if (settingsActive.Count == 0)
+            {
+                await AddDef();
+            }
+            else if (settingsActive.Count == 1)
+            {
+                var def = settingsActive.FirstOrDefault(x => x.Title == "Default");
+                if (def != null)
+                    chat.SearchSettings = chat.SearchSettings.Where(x => x.Id != def.Id);
+
+                await AddDef();
             }
             else
             {
@@ -74,7 +100,7 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
 
         private async Task<string> GetDefaultCountryCurrency(string countryCode)
         {
-            var country = await _countryRepo.GetBy(x => x.Code, countryCode);
+            var country = await _countryRepo.GetOneBy(x => x.Code == countryCode);
 
             return country.Entity.DefSearchCurrencyCode;
         }
@@ -89,11 +115,22 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
             };
         }
 
-        private ChatSearchSettings GetDefaultSettings(PriceSettings price, Country flyTo)
+        private async Task<ChatSearchSettings> GetDefaultSettings(PriceSettings price, Country flyTo)
         {
+            var cities = await _cityRepo.Where(x => x.CountryId == flyTo.Id);
+
+            var airs = new List<Airport>();
+
+            foreach (var city in cities)
+            {
+                var cityAirs = await _airRepo.Where(x => x.CityId == city.Id);
+                airs.AddRange(cityAirs);
+            }
+
             var ssNew = new ChatSearchSettings
             {
                 IsActive = true,
+                Title = "Default",
                 DateSettings = new DateSettings
                 {
                     Type = SearchDateSettingsType.DynamicRange,
@@ -123,11 +160,8 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
                     new ChatSearchGroup
                     {
                         IsActive = true,
-                        Code = "Created from tg settings",
-                        Countries = new List<Country>
-                        {
-                            flyTo,
-                        }
+                        Code = $"All airports from {flyTo.Name}",
+                        Airports = airs
                     }
                 }
             };

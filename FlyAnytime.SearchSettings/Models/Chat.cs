@@ -1,4 +1,5 @@
 ﻿using FlyAnytime.Core.Entity;
+using FlyAnytime.SearchSettings.Models.Location;
 using FlyAnytime.SearchSettings.Models.SearchSettings;
 using FlyAnytime.SearchSettings.MongoDb;
 using FlyAnytime.SearchSettings.MongoDb.Mapping;
@@ -15,7 +16,7 @@ namespace FlyAnytime.SearchSettings.Models
 {
     public class Chat : MongoRoot
     {
-        public string ChatId { get; set; }
+        public long ChatId { get; set; }
 
         public ObjectId ChatOwnerId { get; set; }
         public User ChatOwner { get; set; }
@@ -24,6 +25,9 @@ namespace FlyAnytime.SearchSettings.Models
         public string Title { get; set; }
 
         public IEnumerable<ChatSearchSettings> SearchSettings { get; set; }
+
+        public ObjectId FlyFromId { get; set; }
+        public City FlyFrom { get; set; }
     }
 
     public class ChatMap : RootEntityMap<Chat>
@@ -50,7 +54,7 @@ namespace FlyAnytime.SearchSettings.Models
         {
             var isValid = true;
 
-            if (entity.ChatId.IsNullOrEmpty())
+            if (entity.ChatId == default)
             {
                 isValid = false;
                 modelError.AddValidationError(x => x.ChatId, "Chat Id must be filled");
