@@ -12,9 +12,14 @@ namespace IntegrationTests
     public class InitializeDb : HttpTestBase
     {
         [Fact]
-        public void InitBaseSetup()
+        public void ReCreateDBs()
         {
             ResetDbs();
+        }
+
+        [Fact]
+        public void SetTestData()
+        {
             FillData();
         }
 

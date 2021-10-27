@@ -85,10 +85,10 @@ namespace FlyAnytime.ApiGateway
 
         private string GetRedirectResult(string redirectResponse, bool success)
         {
-            var res = new 
+            var res = new GatewayResultModel
             { 
-                success = success,
-                content = redirectResponse
+                Success = success,
+                Content = redirectResponse
             };
 
             return JsonConvert.SerializeObject(res);
@@ -165,11 +165,7 @@ namespace FlyAnytime.ApiGateway
                     }
                     //newRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToList());
                 }
-                //if (request.Headers.TryGetValue("Authorization", out var res))
-                //{
-                //    newRequest.Headers.Add("Authorization", res.ToList());
-                //}
-                newRequest.Headers.Add("GatewayUrl", Configuration.GetSection("SelfUrl").Value);// $"https://{request.Host.Value}");
+                
                 return await client.SendAsync(newRequest);
             }
         }

@@ -11,5 +11,9 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\FlyAnytime.Messaging\FlyAnytime.Messaging.csproj" />
+  </ItemGroup>
+
 
 </Project>

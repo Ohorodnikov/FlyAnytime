@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FlyAnytime.Messaging;
+using FlyAnytime.Messaging.Messages;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,9 +14,11 @@ namespace FlyAnytime.ApiGateway.Controllers
     public class StartController : Controller
     {
         IConfiguration _configuration;
-        public StartController(IConfiguration configuration)
+        IMessageBus _messageBus;
+        public StartController(IConfiguration configuration, IMessageBus messageBus)
         {
             _configuration = configuration;
+            _messageBus = messageBus;
         }
 
         private async Task<List<object>> SendWOAuth(string route, HttpMethod method, Dictionary<string, string> headers = null)
@@ -50,23 +55,20 @@ namespace FlyAnytime.ApiGateway.Controllers
         [Route("start")]
         public async Task<IActionResult> Start()
         {
-            var initResult = await SendWOAuth("Init", HttpMethod.Get);
+            System.Threading.Thread.Sleep(2000);
+            var selfLocal = _configuration.GetSection("SelfUrl").Value;
 
-            //var ngrokUrl = configuration.GetSection("SelfUrlLocal").Value;
-            //var routeMaps = configuration.GetSection("RouteMap").Get<RouteMap[]>();
+            var msg = new AppInitMessage(selfLocal);
 
-            //var initResult = new List<object>();
+            _messageBus.Publish(msg);
 
-            //var http = new HttpClient();
-            //foreach (var routeMap in routeMaps)
-            //{
-            //    var url = $"{ngrokUrl}{routeMap.Route}/init";
-            //    var res = await http.GetAsync(url);
+            var res = new GatewayResultModel
+            {
+                Success = true,
+                Content = "Started"
+            };
 
-            //    initResult.Add(new { success = res.IsSuccessStatusCode, url = url });
-            //}
-
-            return Json(initResult);
+            return Json(res);
         }
 
         [HttpPut]
@@ -80,6 +82,17 @@ namespace FlyAnytime.ApiGateway.Controllers
             {
                 return NotFound();
             }
+
+            var msg = new ReCreateDbMessage();
+            _messageBus.Publish(msg);
+
+            var res = new GatewayResultModel
+            {
+                Success = true,
+                Content = "Message was sent"
+            };
+
+            return Json(res);
 
             var headers = new Dictionary<string, string>
             {

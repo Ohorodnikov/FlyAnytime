@@ -48,6 +48,7 @@ namespace FlyAnytime.SearchSettings
             services.AddAllImplementationsWithAllInterfaces<IMongoEntityMap>(services.AddSingleton);
 
             services.AddTransient<IMongoDbContext, MongoDbContext>();
+            services.AddScoped<IDbContextBase, MongoDbContext>();
 
             services.AddAllGenericImplementations(typeof(IValidator<>), services.AddTransient);
             services.AddTransient(typeof(IRepository<>), typeof(Repository<>));
@@ -91,6 +92,9 @@ namespace FlyAnytime.SearchSettings
         private void SubscribeOnMessages(IApplicationBuilder app)
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+
+            eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
+            eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
 
             eventBus.Subscribe<RegisterNewChatMessage, RegisterNewChatHandler>();
             eventBus.Subscribe<AddOrUpdateBaseSearchSettingsMessage, AddOrUpdateBaseSearchSettingsHandler>();

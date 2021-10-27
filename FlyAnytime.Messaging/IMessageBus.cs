@@ -1,5 +1,6 @@
 ﻿using FlyAnytime.Messaging.Messages;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -38,10 +39,13 @@ namespace FlyAnytime.Messaging
         private readonly IRabbitConnection _connection;
         private readonly IServiceProvider _serviceProvider;
 
+        ILogger logger;
+
         public RabbitMessageBus(IRabbitConnection connection, IServiceProvider serviceProvider)
         {
             _connection = connection;
             _serviceProvider = serviceProvider;
+            logger = _serviceProvider.GetService<ILogger<RabbitMessageBus>>();
             _consumerChannel = CreateChannel();
         }
 
@@ -61,15 +65,31 @@ namespace FlyAnytime.Messaging
 
         private TMessage GetMessage<TMessage>(BasicDeliverEventArgs ea) => JsonConvert.DeserializeObject<TMessage>(Encoding.UTF8.GetString(ea.Body.ToArray()));
 
-        private void QueueDeclare(string chatName)
+        //private void QueueDeclare(string chatName)
+        //{
+        //    var q = _consumerChannel.QueueDeclare(queue: chatName,
+        //                                          durable: false,
+        //                                          exclusive: false,
+        //                                          autoDelete: false,
+        //                                          arguments: null);
+        //}
+
+        private void ExchangeDeclare(string chatName)
         {
-            _consumerChannel.QueueDeclare(chatName, true, false, false, null);
+            _consumerChannel.ExchangeDeclare(chatName, ExchangeType.Fanout);
         }
 
         private void DoPublish<TMessage>(string chatName, TMessage msg, IBasicProperties props = null)
             where TMessage : BaseMessage
         {
-            _consumerChannel.BasicPublish("", chatName, mandatory: true, props, Obj2Bytes(msg));
+            var subscribesCount = _consumerChannel.ConsumerCount(GetChannelKey(msg.GetType()));
+            logger.LogInformation($"{DateTime.Now}: Send message {msg.GetType()} in chat {chatName} for {subscribesCount} consumers");
+
+            _consumerChannel.BasicPublish(exchange: chatName,
+                                          routingKey: "",
+                                          //mandatory: true,
+                                          basicProperties: props,
+                                          body: Obj2Bytes(msg));
         }
 
         #region Subscribe
@@ -95,13 +115,21 @@ namespace FlyAnytime.Messaging
         {
             var chatName = GetChannelKey(typeof(TMessage));
 
-            QueueDeclare(chatName);
-            _consumerChannel.BasicQos(0, 1, false);
+            ExchangeDeclare(chatName);
+            var q = _consumerChannel.QueueDeclare().QueueName;
+            _consumerChannel.QueueBind(q, chatName, "");
+
             var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
 
             consumer.Received += async (sender, ea) => await OnMessageReceive(sender, ea, onReceive);
 
-            _consumerChannel.BasicConsume(chatName, autoAck: false, consumer: consumer);
+            _consumerChannel.BasicConsume(consumer: consumer,
+                                          queue: q,
+                                          autoAck: false,
+                                          consumerTag: "",
+                                          noLocal: false,
+                                          exclusive: false,
+                                          arguments: null);
         }
 
         private async Task SubscribeWOResult<TMessage, THandler>(BasicDeliverEventArgs ea, TMessage message, IEnumerable<THandler> handlers)
@@ -146,7 +174,8 @@ namespace FlyAnytime.Messaging
         {
             using var scope = _serviceProvider.CreateScope();
             var allHandlers = scope.ServiceProvider.GetServices<THandler>();
-
+            var log = scope.ServiceProvider.GetService<ILogger<RabbitMessageBus>>();
+            log.LogInformation($"{DateTime.Now}: Receive {typeof(TMessage)} on {typeof(THandler)}");
             try
             {
                 await act(ea, GetMessage<TMessage>(ea), allHandlers);
@@ -168,8 +197,13 @@ namespace FlyAnytime.Messaging
         public void Publish<TMessageSend>(TMessageSend message) where TMessageSend : BaseMessage
         {
             var chatName = GetChannelKey(message.GetType());
-            QueueDeclare(chatName);
-            DoPublish(chatName, message);
+            ExchangeDeclare(chatName);
+            //QueueDeclare(chatName);
+            var props = _consumerChannel.CreateBasicProperties();
+
+            props.Persistent = true;
+
+            DoPublish(chatName, message, props);
         }
 
         public async Task<TMessageResult> Publish<TMessageSend, TMessageResult>(TMessageSend message)
@@ -177,8 +211,8 @@ namespace FlyAnytime.Messaging
             where TMessageResult : BaseResponseMessage<TMessageSend>
         {
             var chat = GetChannelKey(message.GetType());
-            QueueDeclare(chat);
-
+            //QueueDeclare(chat);
+            ExchangeDeclare(chat);
             var replyQueueName = _consumerChannel.QueueDeclare("", true, false, false, null).QueueName;
 
             var tcs = new TaskCompletionSource<TMessageResult>();

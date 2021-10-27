@@ -69,6 +69,7 @@ namespace FlyAnytime.Telegram
 
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<TelegramContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(connection));
+            services.AddScoped<IDbContextBase, TelegramContext>();
 
             services.AddTransient<BotClient, BotClient>();
             services.AddTransient<IBotHelper, BotHelper>();
@@ -117,6 +118,9 @@ namespace FlyAnytime.Telegram
         private void SubscribeOnMessages(IApplicationBuilder app)
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+
+            eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
+            eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
 
             eventBus.Subscribe<AddNewLanguageMessage, AddNewLanguageHandler>();
             eventBus.Subscribe<AddOrUpdateCityMessage, AddOrUpdateCityHandler>();

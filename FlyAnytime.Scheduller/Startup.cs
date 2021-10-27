@@ -1,5 +1,7 @@
-﻿using FlyAnytime.Messaging;
+﻿using FlyAnytime.Core;
+using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
+using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Messaging.Messages.Scheduler;
 using FlyAnytime.Scheduler.EF;
 using FlyAnytime.Scheduler.MessageHandlers;
@@ -35,6 +37,7 @@ namespace FlyAnytime.Scheduler
 
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<SchedulerDbContext>(opt => opt.UseSqlServer(connection));
+            services.AddScoped<IDbContextBase, SchedulerDbContext>();
 
             services.AddTransient<IScheduler>(sp => sp.GetService<ISchedulerFactory>().GetScheduler().GetAwaiter().GetResult());
 
@@ -59,20 +62,29 @@ namespace FlyAnytime.Scheduler
                 {
                     tp.MaxConcurrency = 100;
                 });
-
-
             });
 
-            services.AddQuartzHostedService(options =>
+            AddQuartzAsHosted(services, options =>
             {
                 // when shutting down we want jobs to complete gracefully
                 options.WaitForJobsToComplete = true;
             });
         }
 
+        private void AddQuartzAsHosted(IServiceCollection services, Action<QuartzHostedServiceOptions> configure = null)
+        {
+            if (configure != null)
+                services.Configure(configure);            
+
+            services.AddSingleton<IHostedService, QuartzHostedService>();
+        }
+
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime applicationLifetime)
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+
+            eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
+            eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
 
             eventBus.Subscribe<CreateDynamicDateSearchJobMessage, CreateDynamicDateSearchJobHandler>();
             eventBus.Subscribe<CreateFixedDateSearchJobMessage, CreateFixedDateSearchJobHandler>();

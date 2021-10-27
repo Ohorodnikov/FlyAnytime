@@ -51,7 +51,10 @@ namespace IntegrationTests
 
             if (r.Success)
             {
-                return JsonConvert.DeserializeObject<ExpandoObject>(r.Content, new ExpandoObjectConverter());
+                if (r.Content.Trim().StartsWith("{"))
+                    return JsonConvert.DeserializeObject<ExpandoObject>(r.Content, new ExpandoObjectConverter());
+                else
+                    return r.Content;
             }
 
             throw new Exception(r.Content);

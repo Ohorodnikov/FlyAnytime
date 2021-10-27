@@ -1,3 +1,4 @@
+using FlyAnytime.Messaging.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -27,6 +28,7 @@ namespace FlyAnytime.ApiGateway
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<IRouteHelper, RouteHelper>();
+            services.AddRabbitMq();
             services.AddControllers();
         }
 
@@ -37,6 +39,7 @@ namespace FlyAnytime.ApiGateway
             {
                 app.UseDeveloperExceptionPage();
             }
+
 
             app.UseRouting();
             app.UseEndpoints(endpoints =>

@@ -33,6 +33,8 @@ namespace FlyAnytime.Login
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<LoginContext>(opt => opt.UseLazyLoadingProxies().UseSqlServer(connection));
 
+            services.AddScoped<IDbContextBase, LoginContext>();
+
             services.AddLazy<ICommonSettings, CommonSettings>(services.AddSingleton);
             services.SetCommonJwtSettings();
 
@@ -75,6 +77,9 @@ namespace FlyAnytime.Login
         private void SubscribeOnMessages(IApplicationBuilder app)
         {
             var eventBus = app.ApplicationServices.GetRequiredService<IMessageBus>();
+
+            eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
+            eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
 
             eventBus.Subscribe<GetLoginLinkRequestMessage, GetLoginLinkHandler, GetLoginLinkResponseMessage>();
             eventBus.Subscribe<RegisterNewChatMessage, RegisterNewUserHandler>();

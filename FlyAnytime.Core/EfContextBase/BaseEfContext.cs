@@ -23,8 +23,20 @@ namespace FlyAnytime.Core.EfContextBase
 
         public virtual async Task ReCreateDb()
         {
-            Database.EnsureDeleted();
-            Database.EnsureCreated();
+            await DropDb();
+            await CreateDb();
+            //Database.EnsureDeleted();
+            //Database.EnsureCreated();
+        }
+
+        protected virtual async Task DropDb()
+        {
+            await Database.EnsureDeletedAsync();
+        }
+
+        protected virtual async Task CreateDb()
+        {
+            await Database.EnsureCreatedAsync();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

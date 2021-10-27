@@ -11,18 +11,18 @@ namespace FlyAnytime.Login.MessageHandlers
     public class GetLoginLinkHandler : IMessageHandler<GetLoginLinkRequestMessage, GetLoginLinkResponseMessage>
     {
         private IOclHelper _oclHelper;
-        private string GatewayUrl;
+        private string gatewayUrl;
         public GetLoginLinkHandler(IOclHelper oclHelper, ICommonSettings configuration)
         {
             _oclHelper = oclHelper;
-            GatewayUrl = configuration.ApiGatewayUrl;
+            gatewayUrl = configuration.ApiGatewayUrl;
         }
 
         public async Task<GetLoginLinkResponseMessage> Handle(GetLoginLinkRequestMessage message)
         {
             var ocl = await _oclHelper.Create(message.UserId);
 
-            var link = $"{GatewayUrl}/auth/jwtocl/{ocl?.LoginUrl}";
+            var link = $"{gatewayUrl}/auth/jwtocl/{ocl?.LoginUrl}";
 
             return new GetLoginLinkResponseMessage(link);
         }
