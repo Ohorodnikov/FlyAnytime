@@ -10,11 +10,11 @@ using Telegram.Bot.Types.ReplyMarkups;
 namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 {
 
-    public class UpdateCountryStep : SearchByLocalizationConversationStep<SearchCountry>
+    public class UpdateCountryStep : SearchByLocalizationConversationStep<Country>
     {
         public override Guid StepId => new Guid("E87E072F-076A-45A7-B311-190534D4D791");
 
-        protected override OneItemInlineQuery ConvertToOneItemInlineQuery(SearchCountry entity, LocalizationItem localization)
+        protected override OneItemInlineQuery ConvertToOneItemInlineQuery(Country entity, LocalizationItem localization)
         {
             return new OneItemInlineQuery(entity.Code, localization.Localization, $"{localization.Localization}({entity.Code})", entity.Code);
         }
@@ -25,7 +25,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             var countryCode = parts[1].TrimEnd(')');
 
             var settings = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
-            settings.SearchSettings.ChatCountry = await Bot.DbContext.Set<SearchCountry>().FirstAsync(x => x.Code == countryCode);
+            settings.ChatCountry = await Bot.DbContext.Set<Country>().FirstAsync(x => x.Code == countryCode);
 
             await Bot.DbContext.SaveChangesAsync();
 
@@ -36,7 +36,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             await Bot.Bot.SendTextMessageAsync(ChatId, $"Country {parts[0]} was setted successfully");
         }
 
-        protected override string GetExplanationText(Language language)
+        protected override string GetExplanationText(Models.Chat chat)
         {
             return "Press the button to enter your country";
         }

@@ -19,7 +19,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 
         public override bool WaitAnswer => true;
 
-        protected override string GetExplanationText(Language language)
+        protected override string GetExplanationText(Models.Chat chat)
         {
             return "Press the button to select your language";
         }

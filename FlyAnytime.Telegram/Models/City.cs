@@ -8,21 +8,20 @@ using System.Threading.Tasks;
 
 namespace FlyAnytime.Telegram.Models
 {
-    public class SearchCountry : Entity<long>, IEntityWithLocalization
+    public class City : Entity<long>, IEntityWithLocalization
     {
         public virtual string Code { get; set; }
         public virtual string Name { get; set; }
 
-        public virtual string CurrencyCode { get; set; }
-
-        public string TypeDescriptor => "SearchCountry";
+        public string TypeDescriptor => "City";
+        public virtual Country Country { get; set; }
     }
 
-    public class SearchCountryMapping : EntityMap<SearchCountry, long>
+    public class SearchCityMapping : EntityMap<City, long>
     {
-        public SearchCountryMapping() : base("SearchCountry") { }
+        public SearchCityMapping() : base("City") { }
 
-        public override void SetMapping(EntityTypeBuilder<SearchCountry> mapBuilder)
+        public override void SetMapping(EntityTypeBuilder<City> mapBuilder)
         {
             mapBuilder.Property(x => x.Code).IsRequired();
             mapBuilder.Property(x => x.Name).IsRequired();

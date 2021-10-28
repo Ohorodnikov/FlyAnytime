@@ -41,7 +41,7 @@ namespace FlyAnytime.SearchSettings.Controllers
             foreach (var loc in country.Localizations)
                 locals.Add(loc.Language.Code, loc.Value);
             
-            var msg = new AddOrUpdateCountryMessage(country.Code, country.Name, locals);
+            var msg = new AddOrUpdateCountryMessage(country.Code, country.Name, country.DefSearchCurrencyCode, locals);
             _messageBus.Publish(msg);
         }
 

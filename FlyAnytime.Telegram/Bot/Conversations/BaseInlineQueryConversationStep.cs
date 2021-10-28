@@ -59,7 +59,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             }
         }
 
-        protected abstract string GetExplanationText(Language language);
+        protected abstract string GetExplanationText(Models.Chat chat);
         public override async Task<Message> SendConversationBotMessage()
         {
             var button = InlineKeyboardButton.WithSwitchInlineQueryCurrentChat("Button");
@@ -68,10 +68,8 @@ namespace FlyAnytime.Telegram.Bot.Conversations
 
             var chat = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
 
-            var lang = chat.UserLanguage;
-
             var res = await Bot.Bot.SendTextMessageAsync(ChatId,
-                                                  text: GetExplanationText(lang),
+                                                  text: GetExplanationText(chat),
                                                   replyMarkup: inlineKeyboard);
 
             return res;

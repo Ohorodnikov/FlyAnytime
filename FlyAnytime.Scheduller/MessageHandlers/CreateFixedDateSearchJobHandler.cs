@@ -3,14 +3,15 @@ using FlyAnytime.Messaging.Messages.Scheduler;
 using FlyAnytime.Scheduler.EF;
 using FlyAnytime.Scheduler.Jobs;
 using FlyAnytime.Scheduler.Models;
+using Microsoft.Extensions.Logging;
 using Quartz;
 
 namespace FlyAnytime.Scheduler.MessageHandlers
 {
     public class CreateFixedDateSearchJobHandler : BaseCreateSearchJobHandler<CreateFixedDateSearchJobMessage, FixedDateSearchJob, FixedDateSearchJobData>
     {
-        public CreateFixedDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext) 
-            : base(scheduler, dbContext) { }
+        public CreateFixedDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext, ILogger<CreateFixedDateSearchJobHandler> logger) 
+            : base(scheduler, dbContext, logger) { }
 
         protected override FixedDateSearchJobData ConvertMessage2Data(CreateFixedDateSearchJobMessage message)
         {

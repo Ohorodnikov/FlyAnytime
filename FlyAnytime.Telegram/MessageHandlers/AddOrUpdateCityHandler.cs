@@ -22,12 +22,12 @@ namespace FlyAnytime.Telegram.MessageHandlers
 
         public async Task Handle(AddOrUpdateCityMessage message)
         {
-            var country = _dbContext.Set<SearchCountry>().FirstOrDefault(x => x.Code == message.CountryCode);
+            var country = _dbContext.Set<Country>().FirstOrDefault(x => x.Code == message.CountryCode);
 
             if (country == null)
                 return;
 
-            var savedCity = _dbContext.Set<SearchCity>().FirstOrDefault(x => x.Code == message.Code);
+            var savedCity = _dbContext.Set<City>().FirstOrDefault(x => x.Code == message.Code);
 
             if (savedCity == null)
                 await AddCity(message, country);
@@ -35,9 +35,9 @@ namespace FlyAnytime.Telegram.MessageHandlers
                 await UpdateCity(savedCity, message, country);
         }
 
-        private async Task AddCity(AddOrUpdateCityMessage message, SearchCountry country)
+        private async Task AddCity(AddOrUpdateCityMessage message, Country country)
         {
-            var city = new SearchCity
+            var city = new City
             {
                 Code = message.Code,
                 Name = message.Name,
@@ -50,7 +50,7 @@ namespace FlyAnytime.Telegram.MessageHandlers
             await _localizationHelper.AddOrUpdateEntityLocalizations(city, message.LanguageCode2Value);
         }
 
-        private async Task UpdateCity(SearchCity city, AddOrUpdateCityMessage message, SearchCountry country)
+        private async Task UpdateCity(City city, AddOrUpdateCityMessage message, Country country)
         {
             city.Country = country;
             city.Name = message.Name;

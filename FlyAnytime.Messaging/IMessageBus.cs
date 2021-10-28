@@ -82,8 +82,7 @@ namespace FlyAnytime.Messaging
         private void DoPublish<TMessage>(string chatName, TMessage msg, IBasicProperties props = null)
             where TMessage : BaseMessage
         {
-            var subscribesCount = _consumerChannel.ConsumerCount(GetChannelKey(msg.GetType()));
-            logger.LogInformation($"{DateTime.Now}: Send message {msg.GetType()} in chat {chatName} for {subscribesCount} consumers");
+            logger.LogInformation($"{DateTime.Now}: Send message {msg.GetType()} for exchange {chatName}");
 
             _consumerChannel.BasicPublish(exchange: chatName,
                                           routingKey: "",

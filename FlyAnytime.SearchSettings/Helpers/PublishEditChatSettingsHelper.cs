@@ -44,9 +44,15 @@ namespace FlyAnytime.SearchSettings.Helpers
             var airports = await _settingsHelper
                             .GetDestinationAirports(settings)
                             ;
-            var airCodes = airports
+
+            var airCodes = string.Empty;
+            if (airports.Any())
+            {
+                airCodes = airports
                             .Select(x => x.Code)
                             .Aggregate((f, s) => $"{f};{s}");
+            }
+            
 
             var ps = settings.PriceSettings;
             var ds = settings.DateSettings;

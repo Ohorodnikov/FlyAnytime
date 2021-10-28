@@ -10,7 +10,7 @@ namespace FlyAnytime.Scheduler.MessageHandlers
     {
         public async Task Handle(AppInitMessage message)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
         }
     }
 }

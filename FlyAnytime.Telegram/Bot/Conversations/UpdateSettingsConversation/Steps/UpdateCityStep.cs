@@ -10,18 +10,18 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 {
-    public class UpdateCityStep : SearchByLocalizationConversationStep<SearchCity>
+    public class UpdateCityStep : SearchByLocalizationConversationStep<City>
     {
         public override Guid StepId => new Guid("057F1851-9210-4344-A427-10402D6D0313");
 
-        protected override OneItemInlineQuery ConvertToOneItemInlineQuery(SearchCity entity, LocalizationItem localization)
+        protected override OneItemInlineQuery ConvertToOneItemInlineQuery(City entity, LocalizationItem localization)
         {
             return new OneItemInlineQuery(entity.Code, localization.Localization, $"{localization.Localization}({entity.Code})", entity.Code);
         }
 
-        protected override IEnumerable<(SearchCity entity, LocalizationItem loc)> AdditionalFilterForEntities(IEnumerable<(SearchCity entity, LocalizationItem loc)> ents)
+        protected override IEnumerable<(City entity, LocalizationItem loc)> AdditionalFilterForEntities(IEnumerable<(City entity, LocalizationItem loc)> ents)
         {
-            var userCountry = Bot.DbContext.Set<Models.Chat>().Find(ChatId).SearchSettings.ChatCountry.Id;
+            var userCountry = Bot.DbContext.Set<Models.Chat>().Find(ChatId).ChatCountry.Id;
 
             return
                 ents.Where(x => x.entity.Country.Id == userCountry);
@@ -33,7 +33,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             var cityCode = parts[1].TrimEnd(')');
 
             var settings = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
-            settings.SearchSettings.ChatCity = await Bot.DbContext.Set<SearchCity>().FirstAsync(x => x.Code == cityCode);
+            settings.ChatCity = await Bot.DbContext.Set<City>().FirstAsync(x => x.Code == cityCode);
 
             await Bot.DbContext.SaveChangesAsync();
 
@@ -44,7 +44,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             await Bot.Bot.SendTextMessageAsync(ChatId, $"City {parts[0]} was setted successfully");
         }
 
-        protected override string GetExplanationText(Language language)
+        protected override string GetExplanationText(Models.Chat chat)
         {
             return "Press the button to enter your city";
         }

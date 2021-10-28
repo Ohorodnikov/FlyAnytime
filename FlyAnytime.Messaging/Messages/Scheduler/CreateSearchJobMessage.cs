@@ -47,13 +47,13 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
     {
         [JsonConstructor]
         protected ScheduleSettings(
-            string id, bool isActive, ScheduleIntervalType type, 
-            byte intervalValue, byte dayHourAt, byte dayMinuteAt, string customSchedule) 
-            : this(id, isActive, type)
+            string id, bool isActive, ScheduleIntervalType intervalType, 
+            byte intervalValue, byte hour, byte minute, string customSchedule) 
+            : this(id, isActive, intervalType)
         {
             IntervalValue = intervalValue;
-            Hour = dayHourAt;
-            Minute = dayMinuteAt;
+            Hour = hour;
+            Minute = minute;
 
             CustomSchedule = customSchedule;
         }
@@ -119,9 +119,9 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
                                          FlyDirection flyDirection,
                                          PriceSettings priceSettings,
                                          TripDuration tripDuration,
-                                         ScheduleSettings scheduleSettings,
+                                         ScheduleSettings schedule,
                                          TSearchTimeFrame searchTimeFrame)
-                                        : base(chatId, scheduleSettings)
+                                        : base(chatId, schedule)
         {
             FlyDirection = flyDirection;
             PriceSettings = priceSettings;

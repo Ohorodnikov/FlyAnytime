@@ -19,9 +19,10 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 
         public override bool WaitAnswer => true;
 
-        protected override string GetExplanationText(Language language)
+        protected override string GetExplanationText(Models.Chat chat)
         {
-            return "Press and type max price in USD and Country you want to fly to";
+            var chatCurrency = chat.ChatCountry.CurrencyCode;
+            return $"Press and type max price in {chatCurrency} and Country you want to fly to";
         }
 
         protected override async Task<List<OneItemInlineQuery>> GetAnswersForInlineQuery(InlineQuery inlQ)
@@ -37,7 +38,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
                 var chat = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
 
                 var helper = Bot.ServiceProvider.GetService<ILocalizationHelper>();
-                var items = await helper.FindEntitiesByLocalization<SearchCountry>(chat.UserLanguage, countrySearchString);
+                var items = await helper.FindEntitiesByLocalization<Country>(chat.UserLanguage, countrySearchString);
 
                 return
                     items.Select(x => new OneItemInlineQuery(x.entity.Code, x.localization.Localization, $"{priceStr} {x.localization.Localization}({x.entity.Code})", x.entity.Code))
@@ -57,8 +58,8 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             var countryToCode = countryParts[1].Trim(')');
 
             var chat = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
-            var countryFrom = chat.SearchSettings.ChatCountry;
-            var cityFrom = chat.SearchSettings.ChatCity;
+            var countryFrom = chat.ChatCountry;
+            var cityFrom = chat.ChatCity;
 
             var helper = Bot.ServiceProvider.GetService<ILocalizationHelper>();
             var countryFromLocalization = await helper.GetEntityLocalizationForChat(ChatId, countryFrom);
@@ -67,8 +68,8 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             var message = new AddOrUpdateBaseSearchSettingsMessage(
                 ChatId, 
                 decimal.Parse(price), 
-                chat.SearchSettings.ChatCountry.Code,
-                chat.SearchSettings.ChatCity.Code,
+                countryFrom.Code,
+                cityFrom.Code,
                 countryToCode);
 
             Bot.MessageBus.Publish(message);
@@ -77,7 +78,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
                 $@"Great! We will sent **one message** per day with next settings:
 - Fly from {countryFromLocalization.Localization} {cityFromLocalization.Localization}
 - Fly to {countryToName}
-- Ticket costs less than {price}$";
+- Ticket costs less than {price} {countryFrom.CurrencyCode}";
 
             await Bot.Bot.SendTextMessageAsync(ChatId, summaryMsg, ParseMode.Markdown);
 

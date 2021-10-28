@@ -104,7 +104,6 @@ namespace FlyAnytime.Telegram.Bot
 
             dbChat.UserLanguage = DbContext.Set<Language>().First();
 
-            dbChat.SearchSettings = new ChatSearchSettingsBase();
             DbContext.Set<Chat>().Add(dbChat);
 
             await DbContext.SaveChangesAsync();

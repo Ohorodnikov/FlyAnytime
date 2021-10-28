@@ -20,7 +20,8 @@ namespace FlyAnytime.Telegram.Models
         public virtual long? RestartDateTime { get; set; }
 
         public virtual Language UserLanguage { get; set; }
-        public virtual ChatSearchSettingsBase SearchSettings { get; set; }
+        public virtual City ChatCity { get; set; }
+        public virtual Country ChatCountry { get; set; }
     }
 
     public class ChatMapping : EntityMap<Chat, long>

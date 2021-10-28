@@ -27,11 +27,11 @@ namespace FlyAnytime.Telegram.MessageHandlers
 
         public async Task Handle(DeleteCountryMessage message)
         {
-            var country = _dbContext.Set<SearchCountry>().FirstOrDefault(x => x.Code == message.Code);
+            var country = _dbContext.Set<Country>().FirstOrDefault(x => x.Code == message.Code);
             if (country == null)
                 return;
 
-            var cities = _dbContext.Set<SearchCity>().Where(x => x.Country.Id == country.Id);
+            var cities = _dbContext.Set<City>().Where(x => x.Country.Id == country.Id);
 
             foreach (var city in cities)
                 _dbContext.RemoveRange(await _localizationHelper.GetEntityLocalizations(city));
@@ -40,13 +40,13 @@ namespace FlyAnytime.Telegram.MessageHandlers
             _dbContext.RemoveRange(countryLocs);
 
             var chatsWithCurrentCountry = _dbContext.Set<Chat>()
-                .Where(x => x.SearchSettings.ChatCountry.Id == country.Id)
+                .Where(x => x.ChatCountry.Id == country.Id)
                 .ToList();
 
-            foreach (var settings in chatsWithCurrentCountry.Select(x => x.SearchSettings))
+            foreach (var chat in chatsWithCurrentCountry)
             {
-                settings.ChatCity = null;
-                settings.ChatCountry = null;
+                chat.ChatCity = null;
+                chat.ChatCountry = null;
             }
 
             _dbContext.RemoveRange(cities);

@@ -129,7 +129,8 @@ namespace IntegrationTests
                         LanguageId = enLang.Id,
                         Value = "United States of America"
                     }
-                }
+                },
+                CurrencyCode = "USD",
             };
 
             var ua = new Country
@@ -148,7 +149,9 @@ namespace IntegrationTests
                         LanguageId = ruLang.Id,
                         Value = "Украина"
                     }
-                }
+                },
+                DefSearchCurrencyCode = "USD",
+                CurrencyCode = "UAH"
             };
 
             SendCreateRequest(usa);
@@ -268,8 +271,71 @@ namespace IntegrationTests
                 }
             };
 
+            var nyCity = SendGetResult<City>("propName=Code&value=NY");
+            var kennedy = new Airport
+            {
+                Code = "JFK",
+                Name = "John F. Kennedy",
+                CityId = nyCity.Id,
+                Localizations = new List<Localization>()
+                {
+                    new Localization
+                    {
+                        LanguageId = ruLang.Id,
+                        Value = "Международный аеропорт им. Джона Кеннеди"
+                    },
+                    new Localization
+                    {
+                        LanguageId = enLang.Id,
+                        Value = "John F. Kennedy International Airport"
+                    }
+                }
+            };
+            var lga = new Airport
+            {
+                Code = "LGA",
+                Name = "LaGuardia",
+                CityId = nyCity.Id,
+                Localizations = new List<Localization>()
+                {
+                    new Localization
+                    {
+                        LanguageId = ruLang.Id,
+                        Value = "Аеропорт Ла Гвардия"
+                    },
+                    new Localization
+                    {
+                        LanguageId = enLang.Id,
+                        Value = "LaGuardia Airport"
+                    }
+                }
+            };
+            var ewr = new Airport
+            {
+                Code = "EWR",
+                Name = "Newark",
+                CityId = nyCity.Id,
+                Localizations = new List<Localization>()
+                {
+                    new Localization
+                    {
+                        LanguageId = ruLang.Id,
+                        Value = "Международный аеропорт Неварк"
+                    },
+                    new Localization
+                    {
+                        LanguageId = enLang.Id,
+                        Value = "Newark International Airport"
+                    }
+                }
+            };
+
             SendCreateRequest(zhuliany);
             SendCreateRequest(boryspil);
+
+            SendCreateRequest(kennedy);
+            SendCreateRequest(lga);
+            SendCreateRequest(ewr);
         }
 
         private void TestGetAirport()

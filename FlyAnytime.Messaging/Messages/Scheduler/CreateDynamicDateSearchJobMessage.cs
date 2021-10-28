@@ -24,12 +24,12 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
                                                 FlyDirection flyDirection,
                                                 PriceSettings priceSettings,
                                                 TripDuration tripDuration,
-                                                ScheduleSettings scheduleSettings,
+                                                ScheduleSettings schedule,
                                                 DynamicSearchTimeFrame searchTimeFrame,
                                                 
                                                 Dictionary<Days, HashSet<byte>> allowedDateTimeSlotsTo,
                                                 Dictionary<Days, HashSet<byte>> allowedDateTimeSlotsBack)
-                                                : base(chatId, flyDirection, priceSettings, tripDuration, scheduleSettings, searchTimeFrame)
+                                                : base(chatId, flyDirection, priceSettings, tripDuration, schedule, searchTimeFrame)
         {
             ValidateDateTimeSlots(allowedDateTimeSlotsTo);
             ValidateDateTimeSlots(allowedDateTimeSlotsBack);
