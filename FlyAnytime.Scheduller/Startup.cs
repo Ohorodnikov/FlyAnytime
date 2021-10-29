@@ -41,6 +41,8 @@ namespace FlyAnytime.Scheduler
 
             services.AddTransient<IScheduler>(sp => sp.GetService<ISchedulerFactory>().GetScheduler().GetAwaiter().GetResult());
 
+            services.AddTransient<IJobHelper, JobHelper>();
+
             services.AddQuartz(q =>
             {
                 q.SchedulerId = "Scheduler-Core";
@@ -85,6 +87,9 @@ namespace FlyAnytime.Scheduler
 
             eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
             eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
+
+            eventBus.Subscribe<DeleteSearchJobMessage, DeleteSearchJobHandler>();
+            eventBus.Subscribe<PauseSearchJobMessage, PauseSearchJobHandler>();
 
             eventBus.Subscribe<CreateDynamicDateSearchJobMessage, CreateDynamicDateSearchJobHandler>();
             eventBus.Subscribe<CreateFixedDateSearchJobMessage, CreateFixedDateSearchJobHandler>();

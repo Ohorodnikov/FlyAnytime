@@ -17,11 +17,11 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
 {
     public class AddOrUpdateBaseSearchSettingsHandler : IMessageHandler<AddOrUpdateBaseSearchSettingsMessage>
     {
-        IRepository<Chat> _chatRepo;
-        IRepository<Country> _countryRepo;
-        IRepository<City> _cityRepo;
-        IRepository<Airport> _airRepo;
-        IPublishEditChatSettingsHelper _eventHelper;
+        private readonly IRepository<Chat> _chatRepo;
+        private readonly IRepository<Country> _countryRepo;
+        private readonly IRepository<City> _cityRepo;
+        private readonly IRepository<Airport> _airRepo;
+        private readonly IPublishEditChatSettingsHelper _eventHelper;
 
         public AddOrUpdateBaseSearchSettingsHandler(
             IRepository<Chat> chatRepo,
@@ -40,9 +40,6 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
 
         public async Task Handle(AddOrUpdateBaseSearchSettingsMessage message)
         {
-            var cityFlyFrom = message.CityFromFlyCode;
-            var countryFlyTo = message.CountryToFlyCode;
-
             var chatResult = await _chatRepo.GetOneBy(chat => chat.ChatId == message.ChatId);
 
             if (!chatResult.Success)
@@ -50,52 +47,49 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
 
             var chat = chatResult.Entity;
 
-            chat.SearchSettings ??= new List<ChatSearchSettings>();
+            chat.SearchSettings ??= Enumerable.Empty<ChatSearchSettings>();
 
             var settingsActive = chat.SearchSettings.Where(x => x.IsActive).ToList();
 
-            async Task AddDef()
-            {
-                var defCurr = await GetDefaultCountryCurrency(message.CountryFromFlyCode);
-                var defPriceSett = CreatePriceSettings(message.PriceMax, defCurr);
-                var flyTo = await _countryRepo.GetOneBy(x => x.Code == message.CountryToFlyCode);
+            if (settingsActive.Count > 1)
+                return;
 
-                var set = await GetDefaultSettings(defPriceSett, flyTo.Entity);
-
-                var resList = chat.SearchSettings.ToList();
-
-                resList.Add(set);
-
-                chat.SearchSettings = resList;
-
-                var flyFrom = await _cityRepo.GetOneBy(x => x.Code == message.CityFromFlyCode);
-
-                chat.FlyFrom = flyFrom.Entity;
-
-                var updateRes = await _chatRepo.TryReplace(chat);
-
-                if (updateRes.Success)
-                {
-                    await _eventHelper.SendUpdatedSettingsEvent(updateRes.Entity);
-                }
-            }
-
-            if (settingsActive.Count == 0)
-            {
-                await AddDef();
-            }
-            else if (settingsActive.Count == 1)
+            if (settingsActive.Count == 1)
             {
                 var def = settingsActive.FirstOrDefault(x => x.Title == "Default");
-                if (def != null)
-                    chat.SearchSettings = chat.SearchSettings.Where(x => x.Id != def.Id);
 
-                await AddDef();
+                if (def == null)
+                    return;
+
+                await _eventHelper.SendDeleteSettingsEvent(chat.ChatId, new[] { def });
             }
-            else
-            {
-                return;
-            }
+
+            var defSet = await CreateDefaultSearchSettings(message);
+
+            SetDefSettings(chat, defSet);
+
+            var flyFrom = await _cityRepo.GetOneBy(x => x.Code == message.CityFromFlyCode);
+
+            chat.FlyFrom = flyFrom.Entity;
+
+            var updateRes = await _chatRepo.TryReplace(chat);
+
+            if (updateRes.Success)
+                await _eventHelper.SendUpdatedSettingsEvent(updateRes.Entity);
+        }
+
+        private void SetDefSettings(Chat chat, ChatSearchSettings settings)
+        {
+            chat.SearchSettings = chat.SearchSettings.Where(x => x.Title != settings.Title).Append(settings);
+        }
+
+        private async Task<ChatSearchSettings> CreateDefaultSearchSettings(AddOrUpdateBaseSearchSettingsMessage message)
+        {
+            var defCurr = await GetDefaultCountryCurrency(message.CountryFromFlyCode);
+            var defPriceSett = CreatePriceSettings(message.PriceMax, defCurr);
+            var flyTo = await _countryRepo.GetOneBy(x => x.Code == message.CountryToFlyCode);
+
+            return await GetDefaultSettings(defPriceSett, flyTo.Entity);
         }
 
         private async Task<string> GetDefaultCountryCurrency(string countryCode)

@@ -15,14 +15,15 @@ namespace FlyAnytime.Scheduler.MessageHandlers
 {
     public class CreateDynamicDateSearchJobHandler : BaseCreateSearchJobHandler<CreateDynamicDateSearchJobMessage, DynamicDateSearchJob, DynamicDateSearchJobData>
     {
-        public CreateDynamicDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext, ILogger<CreateDynamicDateSearchJobHandler> logger) 
-            : base(scheduler, dbContext, logger) { }
+        public CreateDynamicDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext, IJobHelper jobHelper, ILogger<CreateDynamicDateSearchJobHandler> logger) 
+            : base(scheduler, dbContext, jobHelper, logger) { }
 
         protected override DynamicDateSearchJobData ConvertMessage2Data(CreateDynamicDateSearchJobMessage message)
         {
             return new DynamicDateSearchJobData
             {
                 ChatId = message.ChatId,
+                SettingsId = message.SettingsId,
                 CityFlyFrom = message.FlyDirection.CityFlyFrom,
                 AirportsFlyTo = message.FlyDirection.AirportsFlyTo,
                 Currency = message.PriceSettings.Currency,

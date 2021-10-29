@@ -101,27 +101,25 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
         public string CustomSchedule { get; }
     }
 
-    public abstract class CreateSearchJobMessage : BaseMessage
+    public abstract class CreateSearchJobMessage : BaseSearchJobMessage
     {
-        protected CreateSearchJobMessage(long chatId, ScheduleSettings schedule)
+        protected CreateSearchJobMessage(long chatId, Guid settingsId, ScheduleSettings schedule) : base(chatId, settingsId)
         {
-            ChatId = chatId;
             Schedule = schedule;
         }
-
-        public long ChatId { get; private set; }
         public ScheduleSettings Schedule { get; private set; }
-
     }
+
     public abstract class CreateSearchJobMessage<TSearchTimeFrame> : CreateSearchJobMessage
     {
         protected CreateSearchJobMessage(long chatId,
+                                         Guid settingsId,
                                          FlyDirection flyDirection,
                                          PriceSettings priceSettings,
                                          TripDuration tripDuration,
                                          ScheduleSettings schedule,
                                          TSearchTimeFrame searchTimeFrame)
-                                        : base(chatId, schedule)
+                                        : base(chatId, settingsId, schedule)
         {
             FlyDirection = flyDirection;
             PriceSettings = priceSettings;

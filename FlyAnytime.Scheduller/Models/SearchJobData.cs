@@ -11,6 +11,7 @@ namespace FlyAnytime.Scheduler.Models
     public abstract class BaseSearchJobData : Entity<long>
     {
         public long ChatId { get; set; }
+        public Guid SettingsId { get; set; }
         public string CityFlyFrom { get; set; }
 
         /// <summary>
@@ -36,6 +37,7 @@ namespace FlyAnytime.Scheduler.Models
         public override void SetMapping(EntityTypeBuilder<TJobData> mapBuilder)
         {
             mapBuilder.Property(x => x.ChatId).IsRequired();
+            mapBuilder.Property(x => x.SettingsId).IsRequired();
             mapBuilder.Property(x => x.AirportsFlyTo).IsRequired();
             mapBuilder.Property(x => x.CityFlyFrom).IsRequired();
             mapBuilder.Property(x => x.Currency).IsRequired();

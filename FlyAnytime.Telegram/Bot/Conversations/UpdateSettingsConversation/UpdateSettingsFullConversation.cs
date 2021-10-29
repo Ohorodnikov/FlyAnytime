@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 
-namespace FlyAnytime.Telegram.Bot.Conversations
+namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation
 {
     public class UpdateSettingsFullConversation : ConversationBase
     {

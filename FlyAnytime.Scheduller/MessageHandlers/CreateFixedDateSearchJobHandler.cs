@@ -10,14 +10,15 @@ namespace FlyAnytime.Scheduler.MessageHandlers
 {
     public class CreateFixedDateSearchJobHandler : BaseCreateSearchJobHandler<CreateFixedDateSearchJobMessage, FixedDateSearchJob, FixedDateSearchJobData>
     {
-        public CreateFixedDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext, ILogger<CreateFixedDateSearchJobHandler> logger) 
-            : base(scheduler, dbContext, logger) { }
+        public CreateFixedDateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext, IJobHelper jobHelper, ILogger<CreateFixedDateSearchJobHandler> logger) 
+            : base(scheduler, dbContext, jobHelper, logger) { }
 
         protected override FixedDateSearchJobData ConvertMessage2Data(CreateFixedDateSearchJobMessage message)
         {
             return new FixedDateSearchJobData
             {
                 ChatId = message.ChatId,
+                SettingsId = message.SettingsId,
                 CityFlyFrom = message.FlyDirection.CityFlyFrom,
                 AirportsFlyTo = message.FlyDirection.AirportsFlyTo,
                 Currency = message.PriceSettings.Currency,

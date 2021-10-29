@@ -15,6 +15,7 @@ namespace FlyAnytime.SearchSettings.Helpers
     public interface IPublishEditChatSettingsHelper
     {
         Task SendUpdatedSettingsEvent(Chat chat);
+        Task SendDeleteSettingsEvent(long chatId, IEnumerable<ChatSearchSettings> settings);
     }
 
     public class PublishEditChatSettingsHelper : IPublishEditChatSettingsHelper
@@ -64,8 +65,8 @@ namespace FlyAnytime.SearchSettings.Helpers
 
             var msgs = settings.DateSettings.Type switch
             {
-                SearchDateSettingsType.FixedRange => GetFixedDateSearchMsgs(chatId, flyDirection, priceSettings, tripDuration, schedules, ds.FixedDateSettings),
-                SearchDateSettingsType.DynamicRange => GetDynamicDateSearchMsgs(chatId, flyDirection, priceSettings, tripDuration, schedules, ds.DynamicDateSettings),
+                SearchDateSettingsType.FixedRange => GetFixedDateSearchMsgs(chatId, settings.Id, flyDirection, priceSettings, tripDuration, schedules, ds.FixedDateSettings),
+                SearchDateSettingsType.DynamicRange => GetDynamicDateSearchMsgs(chatId, settings.Id, flyDirection, priceSettings, tripDuration, schedules, ds.DynamicDateSettings),
                 _ => Enumerable.Empty<BaseMessage>(),
             };
 
@@ -74,7 +75,8 @@ namespace FlyAnytime.SearchSettings.Helpers
         }
 
         private IEnumerable<BaseMessage> GetDynamicDateSearchMsgs(
-            long chatId, 
+            long chatId,
+            Guid settingsId,
             FlyDirection direction,
             Messaging.Messages.Scheduler.PriceSettings priceSettings,
             TripDuration duration,
@@ -87,20 +89,21 @@ namespace FlyAnytime.SearchSettings.Helpers
 
             foreach (var schedule in schedules)
             {
-                yield return new CreateDynamicDateSearchJobMessage(
-                                                                chatId, 
-                                                                direction, 
-                                                                priceSettings, 
-                                                                duration, 
-                                                                schedule, 
-                                                                searchFrame, 
-                                                                departureDTSlots, 
-                                                                returnDTSlots);
+                yield return new CreateDynamicDateSearchJobMessage(chatId,
+                                                                   settingsId,
+                                                                   direction,
+                                                                   priceSettings,
+                                                                   duration,
+                                                                   schedule,
+                                                                   searchFrame,
+                                                                   departureDTSlots,
+                                                                   returnDTSlots);
             }
         }
 
         private IEnumerable<BaseMessage> GetFixedDateSearchMsgs(
             long chatId,
+            Guid settingsId,
             FlyDirection direction,
             Messaging.Messages.Scheduler.PriceSettings priceSettings,
             TripDuration duration,
@@ -110,15 +113,22 @@ namespace FlyAnytime.SearchSettings.Helpers
             var dsFrame = new FixedSearchTimeFrame(ds.StartDateUtc, ds.EndDateUtc);
             foreach (var schedule in schedules)
             {
-                yield return new CreateFixedDateSearchJobMessage(
-                                                                chatId,
-                                                                direction,
-                                                                priceSettings,
-                                                                duration,
-                                                                schedule,
-                                                                dsFrame
-                                                                );
+                yield return new CreateFixedDateSearchJobMessage(chatId,
+                                                                 settingsId,
+                                                                 direction,
+                                                                 priceSettings,
+                                                                 duration,
+                                                                 schedule,
+                                                                 dsFrame);
             }
+        }
+
+        public Task SendDeleteSettingsEvent(long chatId, IEnumerable<ChatSearchSettings> settings)
+        {
+            foreach (var set in settings)
+                _messageBus.Publish(new DeleteSearchJobMessage(chatId, set.Id));            
+
+            return Task.CompletedTask;
         }
     }
 }

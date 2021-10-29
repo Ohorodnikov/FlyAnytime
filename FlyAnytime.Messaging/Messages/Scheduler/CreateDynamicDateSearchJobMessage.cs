@@ -19,17 +19,16 @@ namespace FlyAnytime.Messaging.Messages.Scheduler
 
     public class CreateDynamicDateSearchJobMessage : CreateSearchJobMessage<DynamicSearchTimeFrame>
     {
-        public CreateDynamicDateSearchJobMessage(
-                                                long chatId,
-                                                FlyDirection flyDirection,
-                                                PriceSettings priceSettings,
-                                                TripDuration tripDuration,
-                                                ScheduleSettings schedule,
-                                                DynamicSearchTimeFrame searchTimeFrame,
-                                                
-                                                Dictionary<Days, HashSet<byte>> allowedDateTimeSlotsTo,
-                                                Dictionary<Days, HashSet<byte>> allowedDateTimeSlotsBack)
-                                                : base(chatId, flyDirection, priceSettings, tripDuration, schedule, searchTimeFrame)
+        public CreateDynamicDateSearchJobMessage(long chatId,
+                                                 Guid settingsId,
+                                                 FlyDirection flyDirection,
+                                                 PriceSettings priceSettings,
+                                                 TripDuration tripDuration,
+                                                 ScheduleSettings schedule,
+                                                 DynamicSearchTimeFrame searchTimeFrame,
+                                                 Dictionary<Days, HashSet<byte>> allowedDateTimeSlotsTo,
+                                                 Dictionary<Days, HashSet<byte>> allowedDateTimeSlotsBack)
+                                                : base(chatId, settingsId, flyDirection, priceSettings, tripDuration, schedule, searchTimeFrame)
         {
             ValidateDateTimeSlots(allowedDateTimeSlotsTo);
             ValidateDateTimeSlots(allowedDateTimeSlotsBack);

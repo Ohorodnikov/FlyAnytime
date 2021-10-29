@@ -16,7 +16,8 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 
         protected override OneItemInlineQuery ConvertToOneItemInlineQuery(Country entity, LocalizationItem localization)
         {
-            return new OneItemInlineQuery(entity.Code, localization.Localization, $"{localization.Localization}({entity.Code})", entity.Code);
+            var displayValue = localization?.Localization ?? entity.Name;
+            return new OneItemInlineQuery(entity.Code, displayValue, $"{displayValue}({entity.Code})", entity.Code);
         }
 
         protected override async Task OnSelectInlineQuery(Message answer)

@@ -16,7 +16,8 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 
         protected override OneItemInlineQuery ConvertToOneItemInlineQuery(City entity, LocalizationItem localization)
         {
-            return new OneItemInlineQuery(entity.Code, localization.Localization, $"{localization.Localization}({entity.Code})", entity.Code);
+            var displayValue = localization?.Localization ?? entity.Name;
+            return new OneItemInlineQuery(entity.Code, displayValue, $"{displayValue}({entity.Code})", entity.Code);
         }
 
         protected override IEnumerable<(City entity, LocalizationItem loc)> AdditionalFilterForEntities(IEnumerable<(City entity, LocalizationItem loc)> ents)

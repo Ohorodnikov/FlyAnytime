@@ -21,11 +21,16 @@ namespace FlyAnytime.Scheduler.MessageHandlers
     {
         private readonly IScheduler _scheduler;
         private readonly SchedulerDbContext _dbContext;
+        private readonly IJobHelper _jobHelper;
         private readonly ILogger _logger;
-        public BaseCreateSearchJobHandler(IScheduler scheduler, SchedulerDbContext dbContext, ILogger<BaseCreateSearchJobHandler<TMessage, TJob, TData>> logger)
+        public BaseCreateSearchJobHandler(IScheduler scheduler,
+                                          SchedulerDbContext dbContext,
+                                          IJobHelper jobHelper,
+                                          ILogger<BaseCreateSearchJobHandler<TMessage, TJob, TData>> logger)
         {
             _scheduler = scheduler;
             _dbContext = dbContext;
+            _jobHelper = jobHelper;
             _logger = logger;
         }
 
@@ -56,16 +61,18 @@ namespace FlyAnytime.Scheduler.MessageHandlers
                 JobDataId = jobDataId
             };
 
+            var groupName = _jobHelper.CreateSearchJobGroupName(message.ChatId, message.SettingsId);
+
             var job = JobBuilder
                                 .Create<TJob>()
-                                .WithIdentity(jobDataId.ToString(), message.ChatId.ToString())
+                                .WithIdentity(jobDataId.ToString(), groupName)
                                 .UsingJobData(data)
                                 .Build()
                                 ;            
 
             var trigger = TriggerBuilder
                                         .Create()
-                                        .WithIdentity(message.Schedule.Id, message.ChatId.ToString())
+                                        .WithIdentity(message.Schedule.Id, groupName)
                                         .WithCronSchedule(GetCronScheduleString(message.Schedule))
                                         .Build()
                                         ;
