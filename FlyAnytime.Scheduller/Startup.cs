@@ -2,6 +2,7 @@
 using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
 using FlyAnytime.Messaging.Messages;
+using FlyAnytime.Messaging.Messages.ChatSettings;
 using FlyAnytime.Messaging.Messages.Scheduler;
 using FlyAnytime.Scheduler.EF;
 using FlyAnytime.Scheduler.MessageHandlers;
@@ -93,6 +94,9 @@ namespace FlyAnytime.Scheduler
 
             eventBus.Subscribe<CreateDynamicDateSearchJobMessage, CreateDynamicDateSearchJobHandler>();
             eventBus.Subscribe<CreateFixedDateSearchJobMessage, CreateFixedDateSearchJobHandler>();
+
+            eventBus.Subscribe<UpdateChatCityMessage, ChangeChatCityHandler>();
+            eventBus.Subscribe<UpdateChatCountryMessage, ChangeChatCountryHandler>();
         }
     }
 }

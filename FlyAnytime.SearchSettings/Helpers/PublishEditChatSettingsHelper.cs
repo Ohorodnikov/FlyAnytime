@@ -5,6 +5,7 @@ using FlyAnytime.Messaging.Messages.Scheduler;
 using FlyAnytime.SearchSettings.Models;
 using FlyAnytime.SearchSettings.Models.Location;
 using FlyAnytime.SearchSettings.Models.SearchSettings;
+using FlyAnytime.SearchSettings.Repository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,24 +21,27 @@ namespace FlyAnytime.SearchSettings.Helpers
 
     public class PublishEditChatSettingsHelper : IPublishEditChatSettingsHelper
     {
-        IMessageBus _messageBus;
-        IChatSettingsHelper _settingsHelper;
+        private readonly IMessageBus _messageBus;
+        private readonly IChatSettingsHelper _settingsHelper;
+        private readonly IRepository<City> _cityRepo;
         public PublishEditChatSettingsHelper(
             IMessageBus messageBus,
-            IChatSettingsHelper settingsHelper)
+            IChatSettingsHelper settingsHelper, 
+            IRepository<City> cityRepo)
         {
             _messageBus = messageBus;
             _settingsHelper = settingsHelper;
+            _cityRepo = cityRepo;
         }
 
         public async Task SendUpdatedSettingsEvent(Chat chat)
         {
             var settings = chat.SearchSettings;
-            var flyFrom = chat.FlyFrom;
+            var flyFrom = await _cityRepo.GetById(chat.CityFlyFromId);
             var chatId = chat.ChatId;
 
             foreach (var s in settings)
-                await ProcessOneSearchSetting(chatId, flyFrom, s);
+                await ProcessOneSearchSetting(chatId, flyFrom.Entity, s);
         }
 
         private async Task ProcessOneSearchSetting(long chatId, City flyFrom, ChatSearchSettings settings)

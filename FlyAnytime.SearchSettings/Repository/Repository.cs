@@ -4,6 +4,7 @@ using FlyAnytime.Tools;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -128,28 +129,33 @@ namespace FlyAnytime.SearchSettings.Repository
             var entType = entity.GetType();
             var rootProps = entType.GetAllPropsOfType(typeof(IMongoRootEntity));
 
+            PropertyInfo GetIdProp(Type entityOwnerType, PropertyInfo propertyOnRoot)
+            {
+                var isList = propertyOnRoot.PropertyType.IsImplementInterface(typeof(IEnumerable));
+
+                var idPropName = isList ? $"{propertyOnRoot.Name}Ids" : $"{propertyOnRoot.Name}Id";
+
+                return entityOwnerType.GetProperty(idPropName);
+            }
+
             foreach (var prop in rootProps)
             {
                 var v = prop.GetValue(entity);
+                var idProp = GetIdProp(entType, prop);
                 if (v == null)
                 {
                     continue;
+                    //idProp.SetValue(entity, idProp.PropertyType.GetDefaultValue()); //Impossible to detect if relation was set to null or just dont load
                 }
-
-                if (v is IMongoRootEntity root)
+                else if (v is IMongoRootEntity root)
                 {
-                    var idProp = entType.GetProperty($"{prop.Name}Id");
                     idProp.SetValue(entity, root.Id);
                 }
                 else if (v is IEnumerable<IMongoRootEntity> rootList)
                 {
-                    var idProp = entType.GetProperty($"{prop.Name}Ids");
-
                     var idList = new List<ObjectId>(rootList.Count());
                     foreach (var rootItem in rootList)
-                    {
                         idList.Add(rootItem.Id);
-                    }
 
                     idProp.SetValue(entity, idList);
                 }

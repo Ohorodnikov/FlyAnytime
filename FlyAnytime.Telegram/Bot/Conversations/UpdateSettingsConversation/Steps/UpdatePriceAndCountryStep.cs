@@ -62,21 +62,19 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
             var cityFrom = chat.ChatCity;
 
             var helper = Bot.ServiceProvider.GetService<ILocalizationHelper>();
-            var countryFromLocalization = await helper.GetEntityLocalizationForChat(ChatId, countryFrom);
-            var cityFromLocalization = await helper.GetEntityLocalizationForChat(ChatId, cityFrom);
+            var countryFromLocalization = await helper.GetEntityLocalizationValueForChat(ChatId, countryFrom, countryFrom.Name);
+            var cityFromLocalization = await helper.GetEntityLocalizationValueForChat(ChatId, cityFrom, cityFrom.Name);
 
-            var message = new AddOrUpdateBaseSearchSettingsMessage(
+            var message = new UpdatePriceAndDestinationCountryMessage(
                 ChatId, 
-                decimal.Parse(price), 
-                countryFrom.Code,
-                cityFrom.Code,
+                decimal.Parse(price),
                 countryToCode);
 
             Bot.MessageBus.Publish(message);
 
             var summaryMsg =
                 $@"Great! We will sent **one message** per day with next settings:
-- Fly from {countryFromLocalization.Localization} {cityFromLocalization.Localization}
+- Fly from {countryFromLocalization} {cityFromLocalization}
 - Fly to {countryToName}
 - Ticket costs less than {price} {countryFrom.CurrencyCode}";
 

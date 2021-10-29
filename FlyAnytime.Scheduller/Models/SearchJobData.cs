@@ -38,9 +38,9 @@ namespace FlyAnytime.Scheduler.Models
         {
             mapBuilder.Property(x => x.ChatId).IsRequired();
             mapBuilder.Property(x => x.SettingsId).IsRequired();
-            mapBuilder.Property(x => x.AirportsFlyTo).IsRequired();
-            mapBuilder.Property(x => x.CityFlyFrom).IsRequired();
-            mapBuilder.Property(x => x.Currency).IsRequired();
+            //mapBuilder.Property(x => x.AirportsFlyTo).IsRequired();
+            //mapBuilder.Property(x => x.CityFlyFrom).IsRequired();
+            //mapBuilder.Property(x => x.Currency).IsRequired();
         }
     }
 }

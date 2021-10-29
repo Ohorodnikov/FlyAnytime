@@ -8,6 +8,14 @@ namespace FlyAnytime.Tools
 {
     public static class TypeExt
     {
+        public static object GetDefaultValue(this Type t)
+        {
+            if (t.IsValueType)
+                return Activator.CreateInstance(t);
+
+            return null;
+        }
+
         public static bool IsImplementInterface(this Type type, Type interfaceType)
         {
             if (!interfaceType.IsGenericType)

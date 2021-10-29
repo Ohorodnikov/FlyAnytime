@@ -59,7 +59,7 @@ namespace FlyAnytime.Telegram.MessageHandlers
     {
         private readonly ITelegramBotClient _tgClient;
         private readonly TelegramContext _dbContext;
-        ILocalizationHelper _localizationHelper;
+        private readonly ILocalizationHelper _localizationHelper;
         public GetResultsMessageHandler(ITelegramBotClient tgClient, TelegramContext dbContext, ILocalizationHelper localizationHelper)
         {
             _dbContext = dbContext;
@@ -133,13 +133,13 @@ namespace FlyAnytime.Telegram.MessageHandlers
         {
             var city = await _dbContext.Set<City>().FirstAsync(x => x.Code == cityCode);
 
-            var cityLoc = await _localizationHelper.GetEntityLocalizationForChat(chatId, city);
-            var countryLoc = await _localizationHelper.GetEntityLocalizationForChat(chatId, city.Country);
+            var cityLoc = await _localizationHelper.GetEntityLocalizationValueForChat(chatId, city, city.Name);
+            var countryLoc = await _localizationHelper.GetEntityLocalizationValueForChat(chatId, city.Country, city.Country.Name);
 
             return new OneCityResult
             {
-                CityLocalName = cityLoc.Localization,
-                CountryLocalName = countryLoc.Localization
+                CityLocalName = cityLoc,
+                CountryLocalName = countryLoc
             };
         }
     }

@@ -18,6 +18,7 @@ namespace FlyAnytime.Telegram.Models
         Task<IEnumerable<(TEntity entity, LocalizationItem localization)>> FindEntitiesByLocalization<TEntity>(Language language, string searchKey) where TEntity : class, IEntityWithLocalization, new();
 
         Task<LocalizationItem> GetEntityLocalizationForChat<TEntity>(long chatId, TEntity entity) where TEntity : class, IEntityWithLocalization;
+        Task<string> GetEntityLocalizationValueForChat<TEntity>(long chatId, TEntity entity, string defValue) where TEntity : class, IEntityWithLocalization;
     }
 
     public class LocalizationHelper : ILocalizationHelper
@@ -109,6 +110,23 @@ namespace FlyAnytime.Telegram.Models
             return res;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <param name="chatId"></param>
+        /// <param name="entity"></param>
+        /// <param name="defValue">Return this value if no localization will be found</param>
+        /// <returns></returns>
+        public async Task<string> GetEntityLocalizationValueForChat<TEntity>(long chatId, TEntity entity, string defValue)
+            where TEntity : class, IEntityWithLocalization
+        {
+            var data = await GetEntityLocalizationForChat(chatId, entity);
+
+            return data?.Localization ?? defValue ?? $"No localization for {entity.TypeDescriptor}:{entity.Id}";
+        }
+
         public async Task<LocalizationItem> GetEntityLocalizationForChat<TEntity>(long chatId, TEntity entity)
             where TEntity : class, IEntityWithLocalization
         {
@@ -132,7 +150,7 @@ namespace FlyAnytime.Telegram.Models
                         && x.loc.EntityDescriptor == entity.TypeDescriptor
                 )
                 .Select(x => x.loc)
-                .FirstAsync();
+                .FirstOrDefaultAsync(); 
 
             return data;
         }

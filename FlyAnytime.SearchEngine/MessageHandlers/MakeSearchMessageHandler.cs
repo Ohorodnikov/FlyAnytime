@@ -1,6 +1,7 @@
 ﻿using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Messaging.Messages.SearchEngine;
+using FlyAnytime.SearchEngine.Exceptions;
 using SearchEngine.Engine;
 using System;
 using System.Collections.Generic;
@@ -23,15 +24,23 @@ namespace SearchEngine.MessageHandlers
 
         public async Task Handle(MakeSearchMessage message)
         {
-            var results = await _searchEngine.Search(message);
+            try
+            {
+                var results = await _searchEngine.Search(message);
 
-            var msgRes = results
-                .Select(r => new OneSearchResult(r.CityFrom, r.CityTo, r.DateTimeFrom, r.DateTimeBack, r.Price, r.DiscountPercent, r.ResultUrl))
-                .ToList();
+                var msgRes = results
+                    .Select(r => new OneSearchResult(r.CityFrom, r.CityTo, r.DateTimeFrom, r.DateTimeBack, r.Price, r.DiscountPercent, r.ResultUrl))
+                    .ToList();
 
-            var resultMsg = new SearchResultMessage(message.ChatId, msgRes);
+                var resultMsg = new SearchResultMessage(message.ChatId, msgRes);
 
-            _messageBus.Publish(resultMsg);
+                _messageBus.Publish(resultMsg);
+            }
+            catch (DataValidationException ex)
+            {
+                var msg = new ErrorDuringSearchMessage(ex.Message, message.ChatId);
+                _messageBus.Publish(msg);
+            }
         }
     }
 }

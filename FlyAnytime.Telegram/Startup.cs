@@ -131,8 +131,7 @@ namespace FlyAnytime.Telegram
 
 
             eventBus.Subscribe<SearchResultMessage, GetResultsMessageHandler>();
-
-            
+            eventBus.Subscribe<ErrorDuringSearchMessage, ErrorDuringSearchHandler>();            
         }
     }
 }

@@ -26,8 +26,11 @@ namespace FlyAnytime.SearchSettings.Models
 
         public IEnumerable<ChatSearchSettings> SearchSettings { get; set; }
 
-        public ObjectId FlyFromId { get; set; }
-        public City FlyFrom { get; set; }
+        public ObjectId CityFlyFromId { get; set; }
+        public City CityFlyFrom { get; set; }
+
+        public ObjectId CountryFlyFromId { get; set; }
+        public Country CountryFlyFrom { get; set; }
     }
 
     public class ChatMap : RootEntityMap<Chat>

@@ -2,6 +2,7 @@ using FlyAnytime.Core;
 using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
 using FlyAnytime.Messaging.Messages;
+using FlyAnytime.Messaging.Messages.ChatSettings;
 using FlyAnytime.Messaging.Messages.SearchSettings;
 using FlyAnytime.SearchSettings.Helpers;
 using FlyAnytime.SearchSettings.MessageHandlers;
@@ -97,7 +98,10 @@ namespace FlyAnytime.SearchSettings
             eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
 
             eventBus.Subscribe<RegisterNewChatMessage, RegisterNewChatHandler>();
-            eventBus.Subscribe<AddOrUpdateBaseSearchSettingsMessage, AddOrUpdateBaseSearchSettingsHandler>();
+            eventBus.Subscribe<UpdatePriceAndDestinationCountryMessage, UpdatePriceAndDestinationCountryHandler>();
+
+            eventBus.Subscribe<UpdateChatCityMessage, ChangeChatCityHandler>();
+            eventBus.Subscribe<UpdateChatCountryMessage, ChangeChatCountryHandler>();
         }
     }
 }
