@@ -93,25 +93,37 @@ namespace IntegrationTests
             var eng = new Language
             {
                 Code = "En",
-                Name = "English"
+                Name = "English",
+                Culture = "en-US"
             };
 
             var ru = new Language
             {
                 Code = "Ru",
-                Name = "Русский"
+                Name = "Русский",
+                Culture = "ru-RU"
+            };
+
+            var ua = new Language
+            {
+                Code = "Ua",
+                Name = "Українська",
+                Culture = "uk-UA"
             };
 
             SendCreateRequest(eng);
             SendCreateRequest(ru);
+            SendCreateRequest(ua);
         }
 
         Language enLang;
         Language ruLang;
+        Language uaLang;
         private void CreateCountries()
         {
             enLang = SendGetResult<Language>("propName=Code&value=En");
             ruLang = SendGetResult<Language>("propName=Code&value=Ru");
+            uaLang = SendGetResult<Language>("propName=Code&value=Ua");
 
             var usa = new Country
             {
@@ -127,8 +139,13 @@ namespace IntegrationTests
                     new Localization
                     {
                         LanguageId = enLang.Id,
-                        Value = "United States of America"
-                    }
+                        Value = "USA"
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "США"
+                    },
                 },
                 CurrencyCode = "USD",
             };
@@ -148,7 +165,12 @@ namespace IntegrationTests
                     {
                         LanguageId = ruLang.Id,
                         Value = "Украина"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Україна"
+                    },
                 },
                 DefSearchCurrencyCode = "USD",
                 CurrencyCode = "UAH"
@@ -199,7 +221,12 @@ namespace IntegrationTests
                     {
                         LanguageId = enLang.Id,
                         Value = "Odessa"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Одеса"
+                    },
                 }
             };
             
@@ -219,7 +246,12 @@ namespace IntegrationTests
                     {
                         LanguageId = enLang.Id,
                         Value = "New York"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Нью-Йорк"
+                    },
                 }
             };
 
@@ -248,7 +280,12 @@ namespace IntegrationTests
                     {
                         LanguageId = enLang.Id,
                         Value = "Zhuliany"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Жуляни"
+                    },
                 }
             };
             var boryspil = new Airport
@@ -267,7 +304,12 @@ namespace IntegrationTests
                     {
                         LanguageId = enLang.Id,
                         Value = "Boryspil Airport"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Аеропорт Бориспіль"
+                    },
                 }
             };
 
@@ -288,7 +330,12 @@ namespace IntegrationTests
                     {
                         LanguageId = enLang.Id,
                         Value = "John F. Kennedy International Airport"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Міжнародний аеропорт ім. Джона Кенеді"
+                    },
                 }
             };
             var lga = new Airport
@@ -307,7 +354,12 @@ namespace IntegrationTests
                     {
                         LanguageId = enLang.Id,
                         Value = "LaGuardia Airport"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Аеропорт Ла Гвардія"
+                    },
                 }
             };
             var ewr = new Airport
@@ -326,7 +378,12 @@ namespace IntegrationTests
                     {
                         LanguageId = enLang.Id,
                         Value = "Newark International Airport"
-                    }
+                    },
+                    new Localization
+                    {
+                        LanguageId = uaLang.Id,
+                        Value = "Міжнародний Аеропорт Неварк"
+                    },
                 }
             };
 

@@ -15,6 +15,7 @@ namespace FlyAnytime.SearchSettings.Models
     {
         public string Code { get; set; }
         public string Name { get; set; }
+        public string Culture { get; set; }
     }
 
     public class LanguageMap : RootEntityMap<Language>
@@ -46,6 +47,12 @@ namespace FlyAnytime.SearchSettings.Models
             {
                 isValid = false;
                 modelError.AddValidationError(x => x.Code, "Code is empty");
+            }
+
+            if (entity.Culture.IsNullOrEmpty())
+            {
+                isValid = false;
+                modelError.AddValidationError(x => x.Culture, "Culture is empty");
             }
 
             return isValid;

@@ -29,7 +29,7 @@ namespace FlyAnytime.SearchSettings.Controllers
 
         protected override async Task OnSuccessCreate(Language entity)
         {
-            var newLanguageMessage = new AddNewLanguageMessage(entity.Code, entity.Name);
+            var newLanguageMessage = new AddNewLanguageMessage(entity.Code, entity.Name, entity.Culture);
             _messageBus.Publish(newLanguageMessage);
 
             await Task.CompletedTask;

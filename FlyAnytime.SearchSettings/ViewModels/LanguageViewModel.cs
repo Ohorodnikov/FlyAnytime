@@ -14,6 +14,7 @@ namespace FlyAnytime.SearchSettings.ViewModels
     {
         public string Code { get; set; }
         public string Name { get; set; }
+        public string Culture { get; set; }
     }
 
     public class LanguageProfile : BaseVmMongoProfile<Language, LanguageViewModel>

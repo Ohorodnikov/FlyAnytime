@@ -25,7 +25,8 @@ namespace FlyAnytime.Telegram.MessageHandlers
             var lang = new Language
             {
                 Code = message.Code,
-                Name = message.Name
+                Name = message.Name,
+                Culture = message.Culture
             };
 
             _dbContext.Add(lang);

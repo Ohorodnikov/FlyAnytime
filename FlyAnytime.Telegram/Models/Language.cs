@@ -12,6 +12,7 @@ namespace FlyAnytime.Telegram.Models
     {
         public virtual string Code { get; set; }
         public virtual string Name { get; set; }
+        public virtual string Culture { get; set; }
     }
 
     public class LanguageMapping : EntityMap<Language, long>
@@ -25,18 +26,7 @@ namespace FlyAnytime.Telegram.Models
         {
             mapBuilder.Property(x => x.Code).IsRequired();
             mapBuilder.Property(x => x.Name).IsRequired();
-
-            //mapBuilder.HasData(GetDefaultValues());
-        }
-
-        private IEnumerable<Language> GetDefaultValues()
-        {
-            return new List<Language>()
-            {
-                new Language { Id = 1, Name = "English", Code = "En" },
-                new Language { Id = 2, Name = "Русский", Code = "Ru" },
-                new Language { Id = 3, Name = "Українська", Code = "Ua" },
-            };
+            mapBuilder.Property(x => x.Culture).IsRequired();
         }
     }
 }

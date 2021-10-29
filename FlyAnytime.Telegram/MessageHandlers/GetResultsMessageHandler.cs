@@ -69,9 +69,12 @@ namespace FlyAnytime.Telegram.MessageHandlers
 
         public async Task Handle(SearchResultMessage message)
         {
-            var msg = FormatResult(message);
+            var msgs = await FormatResult(message);
 
-            await _tgClient.SendTextMessageAsync(message.ChatId, msg, ParseMode.Markdown);
+            foreach (var msg in msgs)
+            {
+                await _tgClient.SendTextMessageAsync(message.ChatId, msg, ParseMode.Markdown);
+            }
         }
 
 
@@ -81,9 +84,12 @@ namespace FlyAnytime.Telegram.MessageHandlers
         /// </summary>
         /// <param name="results"></param>
         /// <returns></returns>
-        private string FormatResult(SearchResultMessage message)
+        private async Task<List<string>> FormatResult(SearchResultMessage message)
         {
             var dict = new Dictionary<string, OneCityResult>();
+            var chat = await _dbContext.Set<Chat>().FindAsync(message.ChatId);
+            var culture = chat.UserLanguage.Culture;
+            var curr = chat.ChatCountry.CurrencyCode;
             foreach (var res in message.Results)
             {
                 var ocr = dict.GetOrAdd(res.CityTo, cityCode => CreateResult(cityCode, message.ChatId).GetAwaiter().GetResult());
@@ -92,15 +98,35 @@ namespace FlyAnytime.Telegram.MessageHandlers
                 {
                     FlyToStart = DateTimeHelper.UnixToUtc(res.DateTimeFrom),
                     FlyBackEnd = DateTimeHelper.UnixToUtc(res.DateTimeBack),
-                    Culture = "ru-RU",
+                    Culture = culture,
                     Amount = res.Price,
-                    CurrencySymbol = "$"
+                    CurrencySymbol = curr
                 };
 
                 ocr.FlyResults.Add(ofr);
             }
 
-            return string.Join(Environment.NewLine, dict.Values);
+            var resParts = new List<string>();
+            var tgMsgMaxLength = 4000;
+            var sb = new StringBuilder(tgMsgMaxLength);
+
+            foreach (var oneRes in dict.Values)
+            {
+                var currStr = oneRes.ToString();
+
+                if (sb.Length + curr.Length > tgMsgMaxLength)
+                {
+                    resParts.Add(sb.ToString());
+
+                    sb.Clear();
+                }
+
+                sb.Append(currStr);
+            }
+
+            resParts.Add(sb.ToString());
+
+            return resParts;
         }
 
         private async Task<OneCityResult> CreateResult(string cityCode, long chatId)
