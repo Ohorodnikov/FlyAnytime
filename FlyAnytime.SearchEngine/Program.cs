@@ -1,14 +1,12 @@
-using FlyAnytime.Messaging.Helpers;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Quartz;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace FlyAnytime.Scheduler
+namespace SearchEngine
 {
     public class Program
     {
@@ -22,7 +20,7 @@ namespace FlyAnytime.Scheduler
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("https://localhost:5005", "https://localhost:5035");
+                    webBuilder.UseUrls("https://localhost:5004", "https://localhost:5044");
                 });
     }
 }
