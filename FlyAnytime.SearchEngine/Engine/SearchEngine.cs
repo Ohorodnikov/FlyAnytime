@@ -1,15 +1,23 @@
 ﻿using FlyAnytime.Core.Enums;
 using FlyAnytime.Messaging.Messages.SearchEngine;
+using FlyAnytime.SearchEngine;
+using FlyAnytime.SearchEngine.EF;
+using FlyAnytime.SearchEngine.Engine;
+using FlyAnytime.SearchEngine.Engine.ApiRequesters;
+using FlyAnytime.SearchEngine.Engine.ApiRequesters.Kiwi.Models.RequestModels;
 using FlyAnytime.SearchEngine.Exceptions;
+using FlyAnytime.SearchEngine.Models.DbModels;
 using FlyAnytime.Tools;
 using SearchEngine.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
-namespace SearchEngine.Engine
+namespace FlyAnytime.SearchEngine.Engine
 {
     public interface ISearchEngine
     {
@@ -18,6 +26,16 @@ namespace SearchEngine.Engine
 
     public class SearchEngine : ISearchEngine
     {
+        private readonly IApiRequester _apiRequester;
+        private readonly ICacheHelper _cacheHelper;
+        private readonly ChannelWriter<ApiResultModel> _channel;
+        public SearchEngine(IApiRequester apiRequester, ICacheHelper cacheHelper, ChannelWriter<ApiResultModel> channel)
+        {
+            _apiRequester = apiRequester;
+            _cacheHelper = cacheHelper;
+            _channel = channel;
+        }
+
         private void ValidateSettings(MakeSearchMessage settings)
         {
             if (settings.CityFlyFrom.IsNullOrEmpty())
@@ -49,50 +67,117 @@ namespace SearchEngine.Engine
 
         }
 
+        private async Task<HashSet<string>> GetCitiesForAirports(IEnumerable<string> airportCodes)
+        {
+            var airs = airportCodes.ToList();
+            var res = new HashSet<string>(airs.Count);
+
+            foreach (var air in airs)
+            {
+                var city = await _cacheHelper.GetCityCodeForAirport(air);
+                res.Add(city);
+            }
+
+            return res;
+        }
+
         public async Task<IEnumerable<OneResult>> Search(MakeSearchMessage settings)
         {
             ValidateSettings(settings);
 
-            var res = new List<OneResult>();
+            var takeOneDirectionResults = 3;
 
-            var oneRes1 = new OneResult
+            var flyFrom = DateTimeHelper.UnixToUtc(settings.SearchFrame.Start);
+            var returnTo = DateTimeHelper.UnixToUtc(settings.SearchFrame.End);
+
+            var cities = await GetCitiesForAirports(settings.AirportsFlyTo);
+
+            var requests = new List<IApiRequestSender>(cities.Count);
+            foreach (var city in cities)
             {
-                CityFrom = settings.CityFlyFrom,
-                CityTo = "NY",
-                DateTimeFrom = DateTimeHelper.ToUtcUnix(DateTime.UtcNow.AddDays(35)),
-                DateTimeBack = DateTimeHelper.ToUtcUnix(DateTime.UtcNow.AddDays(40)),
-                Price = 1488,
-                DiscountPercent = 10,
-                ResultUrl = ""
-            };
+                var r = _apiRequester
+                                    .CreateRequest(ApiRequestHelper.GenerateRequestGroupName(settings.CityFlyFrom, city))
+                                    .SetFlyDirection(settings.CityFlyFrom, city)
+                                    .AddParam(new Currency(settings.PriceSettings.Currency))
+                                    .AddFlyFromAndReturnDates(flyFrom, returnTo, settings.TripDuration.DaysMin, settings.TripDuration.DaysMax)
+                                    .AddPersons(2, 0, 0)
+                                    .Build();
 
-            var oneRes2 = new OneResult
+                requests.Add(r);
+            }
+
+            var results = new List<OneResult>(cities.Count*takeOneDirectionResults);
+
+            foreach (var r in requests)
             {
-                CityFrom = settings.CityFlyFrom,
-                CityTo = "NY",
-                DateTimeFrom = DateTimeHelper.ToUtcUnix(DateTime.UtcNow.AddDays(35)),
-                DateTimeBack = DateTimeHelper.ToUtcUnix(DateTime.UtcNow.AddDays(40)),
-                Price = 1488,
-                DiscountPercent = 20,
-                ResultUrl = ""
-            };
+                var resultTask = r.Send();
+                var avTask = _cacheHelper.GetAveragePrice(r.Key);
 
-            var oneRes3 = new OneResult
+                await Task.WhenAll(resultTask, avTask);
+
+                var averPrice = await avTask;
+                var searchRes = await resultTask;
+
+                foreach (var res in searchRes)
+                    await _channel.WriteAsync(res);
+
+                var data2Send = FilterResults(searchRes, averPrice, settings)
+                                .OrderBy(x => x.PriceInEur)
+                                .Take(takeOneDirectionResults);
+
+                results.AddRange(Convert2DisplayResults(data2Send, averPrice));
+            }
+
+            //Parallel.ForEach(requests, async r =>
+            //{
+            //    var resultTask = r.Send();
+            //    var avTask = _cacheHelper.GetAveragePrice(r.Key);
+
+            //    await Task.WhenAll(resultTask, avTask);
+
+            //    var averPrice = await avTask;
+            //    var searchRes = await resultTask;
+
+            //    foreach (var res in searchRes)
+            //        await _channel.WriteAsync(res);
+
+            //    var data2Send = FilterResults(searchRes, averPrice, settings).OrderBy(x => x.PriceInEur).Take(3);
+
+            //    results.AddRange(Convert2DisplayResults(data2Send, averPrice));
+            //});
+
+            return results;
+        }
+
+        private IEnumerable<ApiResultModel> FilterResults(IEnumerable<ApiResultModel> data, decimal averagePrice, MakeSearchMessage settings)
+        {
+            var slotsToStart = settings.SearchFrame.AllowedDateTimeSlotsTo;
+            var slotsToBack = settings.SearchFrame.AllowedDateTimeSlotsBack;
+
+            return data
+                .Where(settings.GetFilterForPrice(averagePrice))
+                .Where(d => FilterHelper.IsDateInsideAllowedSlots(d.DepartureFromDateTimeLocal, slotsToStart))
+                .Where(d => FilterHelper.IsDateInsideAllowedSlots(d.ArrivalBackDateTimeLocal, slotsToBack))
+                ;
+        }
+
+        private IEnumerable<OneResult> Convert2DisplayResults(IEnumerable<ApiResultModel> data, decimal averagePrice)
+        {
+            var is0 = averagePrice == 0;
+            return data.Select(x =>
             {
-                CityFrom = settings.CityFlyFrom,
-                CityTo = "NY",
-                DateTimeFrom = DateTimeHelper.ToUtcUnix(DateTime.UtcNow.AddDays(35)),
-                DateTimeBack = DateTimeHelper.ToUtcUnix(DateTime.UtcNow.AddDays(40)),
-                Price = 1488,
-                DiscountPercent = 30,
-                ResultUrl = ""
-            };
-
-            res.Add(oneRes1);
-            res.Add(oneRes2);
-            res.Add(oneRes3);
-
-            return res;
+                var discountValue = is0 ? 0 : ((x.Price - averagePrice) / averagePrice * 100); //if <0 then ticket is cheaper, if >0 - more expensive
+                return new OneResult
+                {
+                    CityFrom = x.CityCodeFrom,
+                    CityTo = x.CityCodeTo,
+                    DateTimeFrom = x.DepartureFromDateTimeLocal,
+                    DateTimeBack = x.ArrivalBackDateTimeLocal,
+                    Price = x.Price,
+                    ResultUrl = x.LinkOnResult,
+                    DiscountPercent = discountValue
+                };
+            });
         }
     }
 }

@@ -9,6 +9,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Channels;
 
 namespace FlyAnytime.Tools
 {
@@ -137,6 +138,14 @@ namespace FlyAnytime.Tools
         public static bool HasRegistration(this IServiceCollection services, Type serviceType, Type implType)
         {
             return services.Any(x => x.ImplementationType == implType && x.ServiceType == serviceType);
+        }
+
+        public static IServiceCollection AddChannel<TEntity>(this IServiceCollection services)
+        {
+            services.AddSingleton<Channel<TEntity>>(Channel.CreateUnbounded<TEntity>(new UnboundedChannelOptions() { SingleReader = true }));
+            services.AddSingleton<ChannelReader<TEntity>>(svc => svc.GetRequiredService<Channel<TEntity>>().Reader);
+            services.AddSingleton<ChannelWriter<TEntity>>(svc => svc.GetRequiredService<Channel<TEntity>>().Writer);
+            return services;
         }
     }
 }

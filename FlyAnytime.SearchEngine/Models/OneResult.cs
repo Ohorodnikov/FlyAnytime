@@ -13,7 +13,7 @@ namespace SearchEngine.Models
         public long DateTimeBack { get; set; }
 
         public decimal Price { get; set; }
-        public byte DiscountPercent { get; set; }
+        public decimal DiscountPercent { get; set; }
 
         public string ResultUrl { get; set; }
     }

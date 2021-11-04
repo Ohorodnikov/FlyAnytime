@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 
 namespace FlyAnytime.Tools
@@ -14,6 +15,9 @@ namespace FlyAnytime.Tools
 
         private static long UtcToUnix(DateTime dateTime) => (long)dateTime.Subtract(DateTime.UnixEpoch).TotalSeconds;
 
+        public static DateTime IsoToDateTime(string isoDateTime) => DateTime.Parse(isoDateTime, null, DateTimeStyles.RoundtripKind);
+
+        public static long IsoToUnix(string isoDateTime) => UtcToUnix(IsoToDateTime(isoDateTime));
 
     }
 }

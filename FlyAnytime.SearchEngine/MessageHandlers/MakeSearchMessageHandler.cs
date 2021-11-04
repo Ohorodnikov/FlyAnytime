@@ -2,14 +2,14 @@
 using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Messaging.Messages.SearchEngine;
 using FlyAnytime.SearchEngine.Exceptions;
-using SearchEngine.Engine;
+using FlyAnytime.SearchEngine.Engine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SearchEngine.MessageHandlers
+namespace FlyAnytime.SearchEngine.MessageHandlers
 {
     public class MakeSearchMessageHandler : IMessageHandler<MakeSearchMessage>
     {

@@ -187,7 +187,7 @@ namespace IntegrationTests
 
             var kyiv = new City
             {
-                Code = "Kyiv",
+                Code = "IEV",
                 Name = "Kyiv",
                 CountryId = uaCountry.Id,
                 Localizations = new List<Localization>()
@@ -232,7 +232,7 @@ namespace IntegrationTests
             
             var NY = new City
             {
-                Code = "NY",
+                Code = "NYC",
                 Name = "New York",
                 CountryId = usaCountry.Id,
                 Localizations = new List<Localization>()
@@ -262,7 +262,7 @@ namespace IntegrationTests
 
         private void CreateAirports()
         {
-            var kyivCity = SendGetResult<City>("propName=Code&value=Kyiv");
+            var kyivCity = SendGetResult<City>("propName=Code&value=IEV");
 
             var zhuliany = new Airport
             {
@@ -313,7 +313,7 @@ namespace IntegrationTests
                 }
             };
 
-            var nyCity = SendGetResult<City>("propName=Code&value=NY");
+            var nyCity = SendGetResult<City>("propName=Code&value=NYC");
             var kennedy = new Airport
             {
                 Code = "JFK",

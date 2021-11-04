@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SearchEngine.MessageHandlers
+namespace FlyAnytime.SearchEngine.MessageHandlers
 {
     public class ReCreateDbMessageHandler : IMessageHandler<ReCreateDbMessage>
     {

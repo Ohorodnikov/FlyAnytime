@@ -71,10 +71,8 @@ namespace FlyAnytime.Telegram.MessageHandlers
         {
             var msgs = await FormatResult(message);
 
-            foreach (var msg in msgs)
-            {
-                await _tgClient.SendTextMessageAsync(message.ChatId, msg, ParseMode.Markdown);
-            }
+            foreach (var msg in msgs.Where(m => !m.IsNullOrEmpty()))
+                await _tgClient.SendTextMessageAsync(message.ChatId, msg, ParseMode.Markdown);            
         }
 
 

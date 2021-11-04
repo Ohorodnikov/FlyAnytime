@@ -11,7 +11,7 @@ namespace FlyAnytime.Messaging.Messages.SearchEngine
                                long dateTimeFrom,
                                long dateTimeBack,
                                decimal price,
-                               byte discountPercent,
+                               decimal discountPercent,
                                string resultUrl)
         {
             CityFrom = cityFrom;
@@ -30,7 +30,11 @@ namespace FlyAnytime.Messaging.Messages.SearchEngine
         public long DateTimeBack { get; }
 
         public decimal Price { get; }
-        public byte DiscountPercent { get; }
+
+        /// <summary>
+        /// if -0 => discount, if +0 => more expencive than regularPrice
+        /// </summary>
+        public decimal DiscountPercent { get; }
 
         public string ResultUrl { get; }
     }
