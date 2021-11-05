@@ -69,33 +69,33 @@ namespace FlyAnytime.SearchEngine.Tests
         private static DateTime flyStart = new DateTime(2021, 12, 4);
         private static DateTime flyEnd = new DateTime(2022, 5, 3);
 
-        private static DateTime mon4AM = new DateTime(2021, 12, 20, 4, 34, 0, DateTimeKind.Utc);
-        private static DateTime mon11AM = new DateTime(2021, 12, 20, 11, 34, 0, DateTimeKind.Utc);
-        private static DateTime mon5PM = new DateTime(2021, 12, 20, 17, 34, 0, DateTimeKind.Utc);
+        private static DateTime monMorning = new DateTime(2021, 12, 20, 4, 34, 0, DateTimeKind.Utc);
+        private static DateTime monDay = new DateTime(2021, 12, 20, 11, 34, 0, DateTimeKind.Utc);
+        private static DateTime monEvening = new DateTime(2021, 12, 20, 17, 34, 0, DateTimeKind.Utc);
 
-        private static DateTime tue4AM = mon4AM.AddDays(1);
-        private static DateTime tue11AM = mon11AM.AddDays(1);
-        private static DateTime tue5PM = mon5PM.AddDays(1);
+        private static DateTime tueMorning = monMorning.AddDays(1);
+        private static DateTime tueDay = monDay.AddDays(1);
+        private static DateTime tueEvening = monEvening.AddDays(1);
 
-        private static DateTime wen4AM = mon4AM.AddDays(2);
-        private static DateTime wen11AM = mon11AM.AddDays(2);
-        private static DateTime wen5PM = mon5PM.AddDays(2);
+        private static DateTime wenMorning = monMorning.AddDays(2);
+        private static DateTime wenDay = monDay.AddDays(2);
+        private static DateTime wenEvening = monEvening.AddDays(2);
 
-        private static DateTime thur4AM = mon4AM.AddDays(3);
-        private static DateTime thur11AM = mon11AM.AddDays(3);
-        private static DateTime thur5PM = mon5PM.AddDays(3);
+        private static DateTime thurMorning = monMorning.AddDays(3);
+        private static DateTime thurDay = monDay.AddDays(3);
+        private static DateTime thur5PM = monEvening.AddDays(3);
 
-        private static DateTime frd4AM = mon4AM.AddDays(4);
-        private static DateTime frd11AM = mon11AM.AddDays(4);
-        private static DateTime frd5PM = mon5PM.AddDays(4);
+        private static DateTime frdMorning = monMorning.AddDays(4);
+        private static DateTime frdDay = monDay.AddDays(4);
+        private static DateTime frdEvening = monEvening.AddDays(4);
 
-        private static DateTime sat4AM = mon4AM.AddDays(5);
-        private static DateTime sat11AM = mon11AM.AddDays(5);
-        private static DateTime sat5PM = mon5PM.AddDays(5);
+        private static DateTime satMorning = monMorning.AddDays(5);
+        private static DateTime satDay = monDay.AddDays(5);
+        private static DateTime satEvening = monEvening.AddDays(5);
 
-        private static DateTime sun4AM = mon4AM.AddDays(6);
-        private static DateTime sun11AM = mon11AM.AddDays(6);
-        private static DateTime sun5PM = mon5PM.AddDays(6);
+        private static DateTime sunMorning = monMorning.AddDays(6);
+        private static DateTime sunDay = monDay.AddDays(6);
+        private static DateTime sunEvening = monEvening.AddDays(6);
 
         private static HashSet<byte> allDay = new HashSet<byte> { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23 };
         private static HashSet<byte> earlyMorning = new HashSet<byte> { 0, 1, 2, 3, 4, 5, 6 };
@@ -105,7 +105,7 @@ namespace FlyAnytime.SearchEngine.Tests
         #endregion
 
         [Fact]
-        public async Task SearchEngine_OneAirpOneCity_FixPrice_AllSlots_Test()
+        public async Task SearEn_2Airp2City_FixPrice_AllSlots_Test()
         {
             var priceSettings = new PriceSettings(SearchPriceSettingsType.FixPrice, 500, USD);
 
@@ -143,22 +143,22 @@ namespace FlyAnytime.SearchEngine.Tests
 
             var result2NY = new List<ApiResultModel>
             {
-                CreateRequstResult(400, USD, NY, frd11AM, tue4AM),
-                CreateRequstResult(450, USD, NY, thur5PM, sun11AM),
-                CreateRequstResult(460, USD, NY, sat5PM, wen5PM),
-                CreateRequstResult(470, USD, NY, frd4AM, tue4AM),
-                CreateRequstResult(475, USD, NY, mon11AM, frd4AM),
-                CreateRequstResult(500, USD, NY, frd4AM, tue4AM),
-                CreateRequstResult(600, USD, NY, frd4AM, tue4AM),
+                CreateRequstResult(400, USD, NY, frdDay, tueMorning),
+                CreateRequstResult(450, USD, NY, thur5PM, sunDay),
+                CreateRequstResult(460, USD, NY, satEvening, wenEvening),
+                CreateRequstResult(470, USD, NY, frdMorning, tueMorning),
+                CreateRequstResult(475, USD, NY, monDay, frdMorning),
+                CreateRequstResult(500, USD, NY, frdMorning, tueMorning),
+                CreateRequstResult(600, USD, NY, frdMorning, tueMorning),
             };
 
             var result2Lon = new List<ApiResultModel>
             {
-                CreateRequstResult(15, USD, London, frd11AM, tue4AM),
-                CreateRequstResult(20, USD, London, thur5PM, sun11AM),
-                CreateRequstResult(25, USD, London, sat5PM, wen5PM),
-                CreateRequstResult(30, USD, London, mon11AM, frd4AM),
-                CreateRequstResult(35, USD, London, frd4AM, tue4AM),
+                CreateRequstResult(15, USD, London, frdDay, tueMorning),
+                CreateRequstResult(20, USD, London, thur5PM, sunDay),
+                CreateRequstResult(25, USD, London, satEvening, wenEvening),
+                CreateRequstResult(30, USD, London, monDay, frdMorning),
+                CreateRequstResult(35, USD, London, frdMorning, tueMorning),
             };
 
             var res = new Dictionary<string, List<ApiResultModel>>
@@ -193,7 +193,7 @@ namespace FlyAnytime.SearchEngine.Tests
         }
 
         [Fact]
-        public async Task SearchEngine_OneAirpOneCity_FixPrice_FilterBySlots_Test()
+        public async Task SearEn_2Airp2City_FixPrice_FilterBySlots_Test()
         {
             var priceSettings = new PriceSettings(SearchPriceSettingsType.FixPrice, 500, USD);
 
@@ -222,22 +222,22 @@ namespace FlyAnytime.SearchEngine.Tests
 
             var result2NY = new List<ApiResultModel>
             {
-                CreateRequstResult(400, USD, NY, frd11AM, tue4AM), //-
-                CreateRequstResult(450, USD, NY, thur5PM, sun11AM), //+
-                CreateRequstResult(460, USD, NY, sat5PM, wen5PM), //-
-                CreateRequstResult(470, USD, NY, frd4AM, tue4AM),//+
-                CreateRequstResult(475, USD, NY, mon11AM, frd4AM),//-
-                CreateRequstResult(500, USD, NY, frd4AM, tue4AM),//+
-                CreateRequstResult(600, USD, NY, frd4AM, tue4AM),//-
+                CreateRequstResult(400, USD, NY, frdDay, tueMorning), //-
+                CreateRequstResult(450, USD, NY, thur5PM, sunDay), //+
+                CreateRequstResult(460, USD, NY, satEvening, wenEvening), //-
+                CreateRequstResult(470, USD, NY, frdMorning, tueMorning),//+
+                CreateRequstResult(475, USD, NY, monDay, frdMorning),//-
+                CreateRequstResult(500, USD, NY, frdMorning, tueMorning),//+
+                CreateRequstResult(600, USD, NY, frdMorning, tueMorning),//-
             };
 
             var result2Lon = new List<ApiResultModel>
             {
-                CreateRequstResult(15, USD, London, frd11AM, tue4AM),//-
-                CreateRequstResult(20, USD, London, thur5PM, sun11AM),//+
-                CreateRequstResult(25, USD, London, sat5PM, wen5PM),//-
-                CreateRequstResult(30, USD, London, mon11AM, frd4AM),//-
-                CreateRequstResult(35, USD, London, frd4AM, tue4AM),//+
+                CreateRequstResult(15, USD, London, frdDay, tueMorning),//-
+                CreateRequstResult(20, USD, London, thur5PM, sunDay),//+
+                CreateRequstResult(25, USD, London, satEvening, wenEvening),//-
+                CreateRequstResult(30, USD, London, monDay, frdMorning),//-
+                CreateRequstResult(35, USD, London, frdMorning, tueMorning),//+
             };
 
             var res = new Dictionary<string, List<ApiResultModel>>
@@ -271,7 +271,7 @@ namespace FlyAnytime.SearchEngine.Tests
         }
 
         [Fact]
-        public async Task SearchEngine_OneAirpOneCity_FixPrice_AllSlots_FilterByMaxPrice_Test()
+        public async Task SearEn_2Airp2City_FixPrice_AllSlots_FilterByMaxPrice_Test()
         {
             var priceSettings = new PriceSettings(SearchPriceSettingsType.FixPrice, 500, USD);
 
@@ -309,19 +309,19 @@ namespace FlyAnytime.SearchEngine.Tests
 
             var result2NY = new List<ApiResultModel>
             {
-                CreateRequstResult(450, USD, NY, frd4AM, tue4AM),
-                CreateRequstResult(475, USD, NY, mon11AM, frd4AM),
-                CreateRequstResult(510, USD, NY, frd4AM, tue4AM),
-                CreateRequstResult(600, USD, NY, frd4AM, tue4AM),
+                CreateRequstResult(450, USD, NY, frdMorning, tueMorning),
+                CreateRequstResult(475, USD, NY, monDay, frdMorning),
+                CreateRequstResult(510, USD, NY, frdMorning, tueMorning),
+                CreateRequstResult(600, USD, NY, frdMorning, tueMorning),
             };
 
             var result2Lon = new List<ApiResultModel>
             {
-                CreateRequstResult(15, USD, London, frd11AM, tue4AM),
-                CreateRequstResult(20, USD, London, thur5PM, sun11AM),
-                CreateRequstResult(25, USD, London, sat5PM, wen5PM),
-                CreateRequstResult(30, USD, London, mon11AM, frd4AM),
-                CreateRequstResult(35, USD, London, frd4AM, tue4AM),
+                CreateRequstResult(15, USD, London, frdDay, tueMorning),
+                CreateRequstResult(20, USD, London, thur5PM, sunDay),
+                CreateRequstResult(25, USD, London, satEvening, wenEvening),
+                CreateRequstResult(30, USD, London, monDay, frdMorning),
+                CreateRequstResult(35, USD, London, frdMorning, tueMorning),
             };
 
             var res = new Dictionary<string, List<ApiResultModel>>
