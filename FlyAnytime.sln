@@ -23,15 +23,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlyAnytime.Core.Web", "FlyA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{7719C7F4-D3EE-4BC5-BAB6-06B3D9A1411F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlyAnytime.SearchSettings.Test", "Tests\FlyAnytime.SearchSettings.Test\FlyAnytime.SearchSettings.Test.csproj", "{9EEBB7F4-8834-41F5-A3C5-72DAA722B99C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{0D4820F9-D4E7-4106-B492-5E8297C6E561}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlyAnytime.Scheduler", "FlyAnytime.Scheduller\FlyAnytime.Scheduler.csproj", "{7E18515D-E4A5-470E-979D-921570922A9C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlyAnytime.SearchEngine", "FlyAnytime.SearchEngine\FlyAnytime.SearchEngine.csproj", "{9AD2FAC7-EA07-41DA-A5BD-3A48C14F7D95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FlyAnytime.SearchEngine.Tests", "FlyAnytime.SearchEngine.Tests\FlyAnytime.SearchEngine.Tests.csproj", "{3A18E275-C7C1-461B-87EE-89E65F4FDAEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FlyAnytime.SearchEngine.Tests", "FlyAnytime.SearchEngine.Tests\FlyAnytime.SearchEngine.Tests.csproj", "{3A18E275-C7C1-461B-87EE-89E65F4FDAEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -75,10 +73,6 @@ Global
 		{FA29803C-C6B2-400F-ADFA-E59C79B277CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA29803C-C6B2-400F-ADFA-E59C79B277CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA29803C-C6B2-400F-ADFA-E59C79B277CB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9EEBB7F4-8834-41F5-A3C5-72DAA722B99C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9EEBB7F4-8834-41F5-A3C5-72DAA722B99C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9EEBB7F4-8834-41F5-A3C5-72DAA722B99C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9EEBB7F4-8834-41F5-A3C5-72DAA722B99C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0D4820F9-D4E7-4106-B492-5E8297C6E561}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0D4820F9-D4E7-4106-B492-5E8297C6E561}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D4820F9-D4E7-4106-B492-5E8297C6E561}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -100,7 +94,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{9EEBB7F4-8834-41F5-A3C5-72DAA722B99C} = {7719C7F4-D3EE-4BC5-BAB6-06B3D9A1411F}
 		{0D4820F9-D4E7-4106-B492-5E8297C6E561} = {7719C7F4-D3EE-4BC5-BAB6-06B3D9A1411F}
 		{3A18E275-C7C1-461B-87EE-89E65F4FDAEA} = {7719C7F4-D3EE-4BC5-BAB6-06B3D9A1411F}
 	EndGlobalSection

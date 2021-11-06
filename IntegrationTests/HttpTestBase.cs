@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using IntegrationTests.Models;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using System;
@@ -77,6 +78,42 @@ namespace IntegrationTests
             }
 
             return content;
+        }
+
+        protected async Task<dynamic> SendCreateRequest<TData>(TData obj)
+            where TData : IBaseControllerModel
+        {
+            var msg = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Post,
+                Content = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json")
+                //Content = GetFormDataContent(obj),
+            };
+
+            dynamic data = await Send(msg, $"{obj.MicroserviceAlias}/{obj.ControllerName}/Create");
+
+            //return data;
+            if (data.success)
+            {
+                return data.data;
+            }
+
+            throw new Exception();
+        }
+
+        protected void ResetDbs()
+        {
+            var key = "19D0DE6E-77A0-4F0D-A9AC-65AEA1470BCB";
+
+            var msg = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Put,
+            };
+
+            msg.Headers.Add("resetDbSecretKey", key);
+            msg.Headers.Add("Referer", "SearchSettings.Test");
+
+            var r = Send(msg, "ReCreateAllDb").GetAwaiter().GetResult();
         }
     }
 }

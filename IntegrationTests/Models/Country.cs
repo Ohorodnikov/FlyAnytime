@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IntegrationTests.Models
 {
-    public class Country : IBaseControllerModel
+    public class Country : IBaseControllerModel, ILocalizationEntity
     {
         public string MicroserviceAlias => "ss";
 
@@ -16,6 +16,6 @@ namespace IntegrationTests.Models
         public string CurrencyCode { get; set; }
         public string DefSearchCurrencyCode { get; set; }
 
-        public IEnumerable<Localization> Localizations { get; set; }
+        public List<Localization> Localizations { get; set; }
     }
 }

@@ -88,7 +88,7 @@ namespace FlyAnytime.Telegram.Models
         {
             var entTypeDescr = new TEntity().TypeDescriptor;
             var itemIds2LocValue = await _dbContext.Set<LocalizationItem>()
-                .Where(x => /*x.LanguageId == language.Id &&*/ x.EntityDescriptor == entTypeDescr && x.Localization.StartsWith(searchKey))
+                .Where(x => x.LanguageId == language.Id && x.EntityDescriptor == entTypeDescr && x.Localization.StartsWith(searchKey))
                 .ToListAsync()
                 ;
 
@@ -103,7 +103,7 @@ namespace FlyAnytime.Telegram.Models
 
             foreach (var item in items)
             {
-                var value = itemIds2LocValue.FirstOrDefault(x => x.LanguageId == language.Id && x.ItemId == item.Id.ToString());
+                var value = itemIds2LocValue.FirstOrDefault(x => x.ItemId == item.Id.ToString());
                 res.Add((item, value));
             }
 

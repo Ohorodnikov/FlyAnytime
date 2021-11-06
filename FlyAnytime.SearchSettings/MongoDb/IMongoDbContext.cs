@@ -18,7 +18,7 @@ namespace FlyAnytime.SearchSettings.MongoDb
 
         //Task InitDatabase();
 
-        void DoMap();
+        void DoMap(bool resetIfRegistered);
     }
 
     public class MongoDbContext : IMongoDbContext
@@ -47,7 +47,7 @@ namespace FlyAnytime.SearchSettings.MongoDb
             var allMaps = _serviceProvider.GetServices<IMongoRootEntityMap>().Select(x => x.TableName);
             await EnsureDeleted(allMaps);
 
-            DoMap();
+            DoMap(true);
 
             await EnsureCreated(allMaps);
         }
@@ -68,8 +68,17 @@ namespace FlyAnytime.SearchSettings.MongoDb
                     await _db.CreateCollectionAsync(table);
         }
 
-        public void DoMap()
+        public void DoMap(bool resetIfRegistered)
         {
+            if (resetIfRegistered)
+            {
+                _inited = false;
+                var f = typeof(BsonClassMap).GetField("__classMaps", BindingFlags.Static | BindingFlags.NonPublic);
+                var val = (Dictionary<Type, BsonClassMap>)f.GetValue(null);
+                foreach (var k in val.Keys)
+                    val.Remove(k);
+            }
+
             if (_inited)
                 return;
 

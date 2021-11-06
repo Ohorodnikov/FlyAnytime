@@ -73,7 +73,7 @@ namespace FlyAnytime.SearchSettings
                 app.UseDeveloperExceptionPage();
             }
 
-            app.ApplicationServices.GetService<IMongoDbContext>().DoMap();//.Wait();
+            app.ApplicationServices.GetService<IMongoDbContext>().DoMap(false);//.Wait();
 
             app.UseHttpsRedirection();
 

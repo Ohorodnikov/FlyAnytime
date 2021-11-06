@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Text;
 using Xunit;
 using FlyAnytime.Tools;
+using System.Threading.Tasks;
 
 namespace IntegrationTests
 {
@@ -18,27 +19,12 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public void SetTestData()
+        public async Task SetTestData()
         {
-            FillData();
+            await FillData();
         }
 
-        private void ResetDbs()
-        {
-            var key = "19D0DE6E-77A0-4F0D-A9AC-65AEA1470BCB";
-
-            var msg = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Put,
-            };
-
-            msg.Headers.Add("resetDbSecretKey", key);
-            msg.Headers.Add("Referer", "SearchSettings.Test");
-
-            var r = Send(msg, "ReCreateAllDb").GetAwaiter().GetResult();
-        }
-
-        private void FillData()
+        private async Task FillData()
         {
             CreateLocalizationLanguages();
             CreateCountries();
@@ -46,28 +32,7 @@ namespace IntegrationTests
             CreateAirports();
         }
 
-        private dynamic SendCreateRequest<TData>(TData obj)
-            where TData : IBaseControllerModel
-        {
-            var msg = new HttpRequestMessage()
-            {
-                Method = HttpMethod.Post,
-                Content = new StringContent(JsonConvert.SerializeObject(obj), Encoding.UTF8, "application/json")
-                //Content = GetFormDataContent(obj),
-            };
-
-            dynamic data = Send(msg, $"{obj.MicroserviceAlias}/{obj.ControllerName}/Create").GetAwaiter().GetResult(); ;
-
-            //return data;
-            if (data.success)
-            {
-                return data.data;
-            }
-
-            throw new Exception();
-        }
-
-        private TModel SendGetResult<TModel>(string request)
+        private async Task<TModel> SendGetResult<TModel>(string request)
             where TModel : IBaseControllerModel, new()
         {
             var obj = new TModel();
@@ -78,7 +43,7 @@ namespace IntegrationTests
                 //Content = GetFormDataContent(obj),
             };
 
-            dynamic data = Send(msg, $"{obj.MicroserviceAlias}/{obj.ControllerName}/GetBy?{request}").GetAwaiter().GetResult(); ;
+            dynamic data = await Send(msg, $"{obj.MicroserviceAlias}/{obj.ControllerName}/GetBy?{request}");
 
             if (data.success)
             {
@@ -88,7 +53,7 @@ namespace IntegrationTests
             throw new Exception($"Cannot get {typeof(TModel)} for request {request}");
         }
 
-        private void CreateLocalizationLanguages()
+        private async Task CreateLocalizationLanguages()
         {
             var eng = new Language
             {
@@ -111,19 +76,19 @@ namespace IntegrationTests
                 Culture = "uk-UA"
             };
 
-            SendCreateRequest(eng);
-            SendCreateRequest(ru);
-            SendCreateRequest(ua);
+            await SendCreateRequest(eng);
+            await SendCreateRequest(ru);
+            await SendCreateRequest(ua);
         }
 
         Language enLang;
         Language ruLang;
         Language uaLang;
-        private void CreateCountries()
+        private async Task CreateCountries()
         {
-            enLang = SendGetResult<Language>("propName=Code&value=En");
-            ruLang = SendGetResult<Language>("propName=Code&value=Ru");
-            uaLang = SendGetResult<Language>("propName=Code&value=Ua");
+            enLang = await SendGetResult<Language>("propName=Code&value=En");
+            ruLang = await SendGetResult<Language>("propName=Code&value=Ru");
+            uaLang = await SendGetResult<Language>("propName=Code&value=Ua");
 
             var usa = new Country
             {
@@ -176,14 +141,14 @@ namespace IntegrationTests
                 CurrencyCode = "UAH"
             };
 
-            SendCreateRequest(usa);
-            SendCreateRequest(ua);
+            await SendCreateRequest(usa);
+            await SendCreateRequest(ua);
         }
 
-        private void CreateCities()
+        private async Task CreateCities()
         {
-            var uaCountry = SendGetResult<Country>("propName=Code&value=UA");
-            var usaCountry = SendGetResult<Country>("propName=Code&value=USA");
+            var uaCountry = await SendGetResult<Country>("propName=Code&value=UA");
+            var usaCountry = await SendGetResult<Country>("propName=Code&value=USA");
 
             var kyiv = new City
             {
@@ -255,14 +220,14 @@ namespace IntegrationTests
                 }
             };
 
-            SendCreateRequest(kyiv);
-            SendCreateRequest(odessa);
-            SendCreateRequest(NY);
+            await SendCreateRequest(kyiv);
+            await SendCreateRequest(odessa);
+            await SendCreateRequest(NY);
         }
 
-        private void CreateAirports()
+        private async Task CreateAirports()
         {
-            var kyivCity = SendGetResult<City>("propName=Code&value=IEV");
+            var kyivCity = await SendGetResult<City>("propName=Code&value=IEV");
 
             var zhuliany = new Airport
             {
@@ -313,7 +278,7 @@ namespace IntegrationTests
                 }
             };
 
-            var nyCity = SendGetResult<City>("propName=Code&value=NYC");
+            var nyCity = await SendGetResult<City>("propName=Code&value=NYC");
             var kennedy = new Airport
             {
                 Code = "JFK",
@@ -387,17 +352,17 @@ namespace IntegrationTests
                 }
             };
 
-            SendCreateRequest(zhuliany);
-            SendCreateRequest(boryspil);
+            await SendCreateRequest(zhuliany);
+            await SendCreateRequest(boryspil);
 
-            SendCreateRequest(kennedy);
-            SendCreateRequest(lga);
-            SendCreateRequest(ewr);
+            await SendCreateRequest(kennedy);
+            await SendCreateRequest(lga);
+            await SendCreateRequest(ewr);
         }
 
-        private void TestGetAirport()
+        private async Task TestGetAirport()
         {
-            var kyivCity = SendGetResult<Airport>("propName=Code&value=KBP");
+            var kyivCity = await SendGetResult<Airport>("propName=Code&value=KBP");
 
             Assert.NotNull(kyivCity);
             Assert.NotEmpty(kyivCity.Id);

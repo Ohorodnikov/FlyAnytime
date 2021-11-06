@@ -35,11 +35,10 @@ namespace FlyAnytime.Messaging
 
     public class RabbitMessageBus : IMessageBus
     {
-        private IModel _consumerChannel;
+        private readonly IModel _consumerChannel;
         private readonly IRabbitConnection _connection;
         private readonly IServiceProvider _serviceProvider;
-
-        ILogger logger;
+        private readonly ILogger logger;
 
         public RabbitMessageBus(IRabbitConnection connection, IServiceProvider serviceProvider)
         {
@@ -74,15 +73,21 @@ namespace FlyAnytime.Messaging
         //                                          arguments: null);
         //}
 
+        private readonly HashSet<string> declaredChats = new HashSet<string>();
+
         private void ExchangeDeclare(string chatName)
         {
+            if (declaredChats.Contains(chatName))
+                return;
+
             _consumerChannel.ExchangeDeclare(chatName, ExchangeType.Fanout);
+            declaredChats.Add(chatName);
         }
 
         private void DoPublish<TMessage>(string chatName, TMessage msg, IBasicProperties props = null)
             where TMessage : BaseMessage
         {
-            logger.LogInformation($"{DateTime.Now}: Send message {msg.GetType()} for exchange {chatName}");
+            logger.LogInformation($"{DateTime.Now}: Send message {msg.GetType().Name} for exchange {chatName}");
 
             _consumerChannel.BasicPublish(exchange: chatName,
                                           routingKey: "",
@@ -174,7 +179,7 @@ namespace FlyAnytime.Messaging
             using var scope = _serviceProvider.CreateScope();
             var allHandlers = scope.ServiceProvider.GetServices<THandler>();
             var log = scope.ServiceProvider.GetService<ILogger<RabbitMessageBus>>();
-            log.LogInformation($"{DateTime.Now}: Receive {typeof(TMessage)} on {typeof(THandler)}");
+            log.LogInformation($"{DateTime.Now}: Receive {typeof(TMessage).Name} on {typeof(THandler).Name}");
             try
             {
                 await act(ea, GetMessage<TMessage>(ea), allHandlers);

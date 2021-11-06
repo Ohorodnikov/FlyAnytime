@@ -113,7 +113,7 @@ namespace FlyAnytime.SearchEngine.Tests
         }
 
         Random rnd = new Random();
-        public static void Shuffle<T>(Random rng, T[] array)
+        private static void Shuffle<T>(Random rng, T[] array)
         {
             int n = array.Length;
             while (n > 1)

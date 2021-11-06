@@ -2,7 +2,7 @@
 
 namespace IntegrationTests.Models
 {
-    public class Airport : IBaseControllerModel
+    public class Airport : IBaseControllerModel, ILocalizationEntity
     {
         public string MicroserviceAlias => "ss";
 
@@ -13,6 +13,6 @@ namespace IntegrationTests.Models
         public string Name { get; set; }
         public string CityId { get; set; }
 
-        public IEnumerable<Localization> Localizations { get; set; }
+        public List<Localization> Localizations { get; set; }
     }
 }

@@ -4,7 +4,7 @@ using System.Text;
 
 namespace IntegrationTests.Models
 {
-    public class City : IBaseControllerModel
+    public class City : IBaseControllerModel, ILocalizationEntity
     {
         public string MicroserviceAlias => "ss";
 
@@ -15,6 +15,6 @@ namespace IntegrationTests.Models
         public string Name { get; set; }
         public string CountryId { get; set; }
 
-        public IEnumerable<Localization> Localizations { get; set; }
+        public List<Localization> Localizations { get; set; }
     }
 }
