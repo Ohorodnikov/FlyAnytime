@@ -60,6 +60,7 @@ namespace SearchEngine
 
             eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
             eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
+            eventBus.Subscribe<DeleteAllUsersDataMessage, DeleteAllUsersDataHandler>();
 
             eventBus.Subscribe<MakeSearchMessage, MakeSearchMessageHandler>();
 

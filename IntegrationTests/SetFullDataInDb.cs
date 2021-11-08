@@ -192,7 +192,7 @@ namespace IntegrationTests
 
         private async Task DoInParallel<T>(List<T> ts, Func<T, Task> func)
         {
-            var batchSize = 100;
+            var batchSize = 20;
             var current = 0;
 
             while (current <= ts.Count)

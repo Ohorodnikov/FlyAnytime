@@ -96,6 +96,7 @@ namespace FlyAnytime.SearchSettings
 
             eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
             eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
+            eventBus.Subscribe<DeleteAllUsersDataMessage, DeleteAllUsersDataHandler>();
 
             eventBus.Subscribe<RegisterNewChatMessage, RegisterNewChatHandler>();
             eventBus.Subscribe<UpdatePriceAndDestinationCountryMessage, UpdatePriceAndDestinationCountryHandler>();

@@ -41,7 +41,7 @@ namespace FlyAnytime.Telegram.Services
             var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
 
             var webhookAddress = @$"{_settings.Value.ApiGatewayUrl}/tgbot/bot/{_botConfig.BotToken}";
-            _logger.LogInformation("Setting webhook: ", webhookAddress);
+            _logger.LogInformation("Setting webhook: {0}", webhookAddress);
 
             await botClient.SetWebhookAsync(url: webhookAddress);
         }

@@ -19,6 +19,22 @@ namespace IntegrationTests
         }
 
         [Fact]
+        public async Task CleanAllUsersWithData()
+        {
+            var key = "19D0DE6E-77A0-4F0D-A9AC-65AEA1470BCB";
+
+            var msg = new HttpRequestMessage()
+            {
+                Method = HttpMethod.Put,
+            };
+
+            msg.Headers.Add("resetDbSecretKey", key);
+            msg.Headers.Add("Referer", "SearchSettings.Test");
+
+            var r = await Send(msg, "DeleteAllUsersData");
+        }
+
+        [Fact]
         public async Task SetTestData()
         {
             await FillData();
@@ -26,10 +42,10 @@ namespace IntegrationTests
 
         private async Task FillData()
         {
-            CreateLocalizationLanguages();
-            CreateCountries();
-            CreateCities();
-            CreateAirports();
+            await CreateLocalizationLanguages();
+            await CreateCountries();
+            await CreateCities();
+            await CreateAirports();
         }
 
         private async Task<TModel> SendGetResult<TModel>(string request)

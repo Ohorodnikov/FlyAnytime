@@ -88,6 +88,7 @@ namespace FlyAnytime.Scheduler
 
             eventBus.Subscribe<AppInitMessage, AppInitMessageHandler>();
             eventBus.Subscribe<ReCreateDbMessage, ReCreateDbMessageHandler>();
+            eventBus.Subscribe<DeleteAllUsersDataMessage, DeleteAllUsersDataHandler>();
 
             eventBus.Subscribe<DeleteSearchJobMessage, DeleteSearchJobHandler>();
             eventBus.Subscribe<PauseSearchJobMessage, PauseSearchJobHandler>();
