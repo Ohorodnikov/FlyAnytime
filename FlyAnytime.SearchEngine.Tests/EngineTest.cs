@@ -1,6 +1,7 @@
 ﻿using FlyAnytime.Core.Enums;
 using FlyAnytime.Messaging.Messages.Scheduler;
 using FlyAnytime.Messaging.Messages.SearchEngine;
+using FlyAnytime.SearchEngine.EF;
 using FlyAnytime.SearchEngine.Engine.ApiRequesters;
 using FlyAnytime.SearchEngine.Engine.ApiRequesters.Kiwi.Models;
 using FlyAnytime.Tools;
@@ -170,11 +171,12 @@ namespace FlyAnytime.SearchEngine.Tests
             var apiMock = GetMockApiRequester(res);
             var cacheMock = GetMockForICacheHelper(priceCache2value);
             var channelMock = GetMockChannel();
+            var dbContextMock = GetMockForContext();
 
-            var engine = new Engine.SearchEngine(apiMock.Object, cacheMock.Object, channelMock.Object);
+            var engine = new Engine.SearchEngine(apiMock.Object, cacheMock.Object, channelMock.Object, dbContextMock.Object);
             var results = await engine.Search(searchParams);
 
-            channelMock.Verify(x => x.WriteAsync(It.IsAny<ApiResultModel>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+            channelMock.Verify(x => x.WriteAsync(It.IsAny<List<ApiResultModel>>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
             apiMock.Verify(x => x.CreateRequest(It.IsAny<string>()), Times.Exactly(2));
 
             var lonResActual = results.Where(x => x.CityTo == London).ToList();
@@ -249,11 +251,12 @@ namespace FlyAnytime.SearchEngine.Tests
             var apiMock = GetMockApiRequester(res);
             var cacheMock = GetMockForICacheHelper(priceCache2value);
             var channelMock = GetMockChannel();
+            var dbContextMock = GetMockForContext();
 
-            var engine = new Engine.SearchEngine(apiMock.Object, cacheMock.Object, channelMock.Object);
+            var engine = new Engine.SearchEngine(apiMock.Object, cacheMock.Object, channelMock.Object, dbContextMock.Object);
             var results = await engine.Search(searchParams);
 
-            channelMock.Verify(x => x.WriteAsync(It.IsAny<ApiResultModel>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+            channelMock.Verify(x => x.WriteAsync(It.IsAny<List<ApiResultModel>>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
             apiMock.Verify(x => x.CreateRequest(It.IsAny<string>()), Times.Exactly(2));
 
             var lonResActual = results.Where(x => x.CityTo == London).ToList();
@@ -333,11 +336,12 @@ namespace FlyAnytime.SearchEngine.Tests
             var apiMock = GetMockApiRequester(res);
             var cacheMock = GetMockForICacheHelper(priceCache2value);
             var channelMock = GetMockChannel();
+            var dbContextMock = GetMockForContext();
 
-            var engine = new Engine.SearchEngine(apiMock.Object, cacheMock.Object, channelMock.Object);
+            var engine = new Engine.SearchEngine(apiMock.Object, cacheMock.Object, channelMock.Object, dbContextMock.Object);
             var results = await engine.Search(searchParams);
 
-            channelMock.Verify(x => x.WriteAsync(It.IsAny<ApiResultModel>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
+            channelMock.Verify(x => x.WriteAsync(It.IsAny<List<ApiResultModel>>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce);
             apiMock.Verify(x => x.CreateRequest(It.IsAny<string>()), Times.Exactly(2));
 
             var lonResActual = results.Where(x => x.CityTo == London).ToList();
@@ -369,9 +373,16 @@ namespace FlyAnytime.SearchEngine.Tests
 
         #region Moq
 
-        private Mock<ChannelWriter<ApiResultModel>> GetMockChannel()
+        private Mock<SearchEngineContext> GetMockForContext()
         {
-            var channelMock = new Mock<ChannelWriter<ApiResultModel>>();
+            var mock = new Mock<SearchEngineContext>();
+
+            return mock;
+        }
+
+        private Mock<ChannelWriter<List<ApiResultModel>>> GetMockChannel()
+        {
+            var channelMock = new Mock<ChannelWriter<List<ApiResultModel>>>();
 
             //channelMock.Setup(ch => ch.WriteAsync(It.IsAny<ApiResultModel>(), System.Threading.CancellationToken.None));
 

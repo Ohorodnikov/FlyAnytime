@@ -10,6 +10,24 @@ namespace FlyAnytime.SearchEngine.Tests
     public class AverageCalculatorTest
     {
         [Fact]
+        public void TestQuantileSimple()
+        {
+            var pricesArr = new List<decimal> 
+            {
+                3, 0, 1, 5, 1, 2, 4, 5, 3, 4,
+                2, 4, 2, 0, 2, 3, 1, 3, 2, 1,
+                4, 3, 0, 2, 1, 0, 4, 2, 3, 2
+            };
+
+            var r = AverageCalculator.GetQuantile(pricesArr, 0.2M);
+            var r1 = AverageCalculator.GetQuantile(pricesArr, 0.3M);
+
+            Assert.Equal(1, r);
+            Assert.Equal(1.5M, r1);
+        }
+
+
+        [Fact]
         public void AverageTest1()
         {
             var price2Count = new Dictionary<decimal, int>

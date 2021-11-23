@@ -8,6 +8,7 @@ using FlyAnytime.SearchEngine.Engine.ApiRequesters.Kiwi.Models.RequestModels;
 using FlyAnytime.SearchEngine.Exceptions;
 using FlyAnytime.SearchEngine.Models.DbModels;
 using FlyAnytime.Tools;
+using Microsoft.EntityFrameworkCore;
 using SearchEngine.Models;
 using System;
 using System.Collections.Generic;
@@ -28,12 +29,15 @@ namespace FlyAnytime.SearchEngine.Engine
     {
         private readonly IApiRequester _apiRequester;
         private readonly ICacheHelper _cacheHelper;
-        private readonly ChannelWriter<ApiResultModel> _channel;
-        public SearchEngine(IApiRequester apiRequester, ICacheHelper cacheHelper, ChannelWriter<ApiResultModel> channel)
+        private readonly ChannelWriter<List<ApiResultModel>> _channel;
+        private readonly SearchEngineContext _dbContext;
+
+        public SearchEngine(IApiRequester apiRequester, ICacheHelper cacheHelper, ChannelWriter<List<ApiResultModel>> channel, SearchEngineContext dbContext)
         {
             _apiRequester = apiRequester;
             _cacheHelper = cacheHelper;
             _channel = channel;
+            _dbContext = dbContext;
         }
 
         private void ValidateSettings(MakeSearchMessage settings)
@@ -93,25 +97,54 @@ namespace FlyAnytime.SearchEngine.Engine
             var cities = await GetCitiesForAirports(settings.AirportsFlyTo);
 
             var requests = new List<IApiRequestSender>(cities.Count);
+            var reqKeys = new List<string>(cities.Count);
+            var adults = 2;
+            var children = 0;
+            var infants = 0;
             foreach (var city in cities)
             {
+                var key = ApiRequestHelper.GenerateRequestGroupName(settings.CityFlyFrom, city);
+                reqKeys.Add(key);
                 var r = _apiRequester
-                                    .CreateRequest(ApiRequestHelper.GenerateRequestGroupName(settings.CityFlyFrom, city))
+                                    .CreateRequest(key)
                                     .SetFlyDirection(settings.CityFlyFrom, city)
                                     .AddParam(new Currency(settings.PriceSettings.Currency))
                                     .AddFlyFromAndReturnDates(flyFrom, returnTo, settings.TripDuration.DaysMin, settings.TripDuration.DaysMax)
-                                    .AddPersons(2, 0, 0)
+                                    .AddPersons(adults, children, infants)
                                     .Build();
 
                 requests.Add(r);
             }
 
-            var results = new List<OneResult>(cities.Count*takeOneDirectionResults);
+            var keys2count = await _dbContext.Set<SearchCode2Count>().Where(x => reqKeys.Contains(x.Code)).ToListAsync();
 
+            foreach (var key in reqKeys)
+            {
+                var key2count = keys2count.FirstOrDefault(x => x.Code == key);
+                if (key2count == null)
+                {
+                    var k2c = new SearchCode2Count
+                    {
+                        Code = key,
+                        SearchCount = 1
+                    };
+                    _dbContext.Add(k2c);
+                }
+                else
+                {
+                    key2count.SearchCount++;
+                    _dbContext.Update(key2count);
+                }
+            }
+
+            await _dbContext.SaveChangesAsync();
+
+            var results = new List<OneResult>(cities.Count*takeOneDirectionResults);
+            byte mostPopularPercent = 70;
             foreach (var r in requests)
             {
                 var resultTask = r.Send();
-                var avTask = _cacheHelper.GetAveragePrice(r.Key);
+                var avTask = _cacheHelper.GetSmallestMostPopularPrice(r.Key, mostPopularPercent);
 
                 await Task.WhenAll(resultTask, avTask);
 
@@ -119,7 +152,14 @@ namespace FlyAnytime.SearchEngine.Engine
                 var searchRes = await resultTask;
 
                 foreach (var res in searchRes)
-                    await _channel.WriteAsync(res);
+                {
+                    res.Price = res.Price / (adults + children);
+                    res.PriceInEur = res.PriceInEur / (adults + children);
+                }
+
+                var savedPrice = new HashSet<decimal>(searchRes.Count);
+
+                await _channel.WriteAsync(searchRes.Where(x => x.PriceInEur <= averPrice*3).ToList());
 
                 var data2Send = FilterResults(searchRes, averPrice, settings)
                                 .OrderBy(x => x.PriceInEur)
@@ -166,7 +206,7 @@ namespace FlyAnytime.SearchEngine.Engine
             var is0 = averagePrice == 0;
             return data.Select(x =>
             {
-                var discountValue = is0 ? 0 : ((x.Price - averagePrice) / averagePrice * 100); //if <0 then ticket is cheaper, if >0 - more expensive
+                var discountValue = is0 ? 0 : ((x.PriceInEur - averagePrice) / averagePrice * 100); //if <0 then ticket is cheaper, if >0 - more expensive
                 return new OneResult
                 {
                     CityFrom = x.CityCodeFrom,

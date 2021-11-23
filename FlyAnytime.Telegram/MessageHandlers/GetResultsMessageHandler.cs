@@ -23,6 +23,10 @@ namespace FlyAnytime.Telegram.MessageHandlers
         public string CurrencySymbol { get; set; }
         public string Culture { get; set; }
 
+        public string Link { get; set; }
+
+        public bool IsCheap { get; set; }
+
         private string FormatDateTime(DateTime dateTime)
         {
             return dateTime.ToString("ddd, dd MMM, HH:mm", new CultureInfo(Culture));
@@ -30,7 +34,11 @@ namespace FlyAnytime.Telegram.MessageHandlers
 
         public override string ToString()
         {
-            return $"- {FormatDateTime(FlyToStart)} - {FormatDateTime(FlyBackEnd)}, {Amount} {CurrencySymbol}";
+            var startDayTime = FormatDateTime(FlyToStart);
+            var endDayTime = FormatDateTime(FlyBackEnd);
+            var specialMark = IsCheap ? "❗️" : "";
+            var amtFormated = ((int)Amount).ToString();
+            return $"- {startDayTime} - {endDayTime}, [{amtFormated} {CurrencySymbol}](){specialMark}";
         }
     }
 
@@ -98,7 +106,9 @@ namespace FlyAnytime.Telegram.MessageHandlers
                     FlyBackEnd = DateTimeHelper.UnixToUtc(res.DateTimeBack),
                     Culture = culture,
                     Amount = res.Price,
-                    CurrencySymbol = curr
+                    CurrencySymbol = curr,
+                    Link = res.ResultUrl,
+                    IsCheap = res.DiscountPercent <= -10 //Discount is more than 10%
                 };
 
                 ocr.FlyResults.Add(ofr);

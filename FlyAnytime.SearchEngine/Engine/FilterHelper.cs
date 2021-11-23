@@ -18,7 +18,7 @@ namespace FlyAnytime.SearchEngine.Engine
             Func<ApiResultModel, bool> priceFlt = mode switch
             {
                 SearchPriceSettingsType.FixPrice => r => r.Price <= amount,
-                SearchPriceSettingsType.PercentDiscount => r => is0 || (r.Price - averagePrice) / averagePrice >= amount,
+                SearchPriceSettingsType.PercentDiscount => r => is0 || (r.PriceInEur - averagePrice) / averagePrice >= amount,
                 _ => throw new NotImplementedException(),
             };
 

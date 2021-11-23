@@ -83,7 +83,7 @@ namespace FlyAnytime.Scheduler.MessageHandlers
 
         private string GetCronScheduleString(ScheduleSettings set)
         {
-            return $"0 {0}/3 * * * ?";
+            return $"0 {0}/30 * * * ?";
             var cronExpr = set.IntervalType switch
             {
                 ScheduleIntervalType.Hour => $"0 {GetNextMinute()} 0/{set.IntervalValue} 1/1 * ? *",

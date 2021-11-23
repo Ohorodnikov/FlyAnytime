@@ -16,6 +16,13 @@ namespace FlyAnytime.SearchEngine
     public interface ICacheHelper
     {
         Task<decimal> GetAveragePrice(string directionKey);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="directionCode"></param>
+        /// <param name="mostPopularPercent"></param>
+        /// <returns>Returns first value with chance to get is more than <paramref name="mostPopularPercent"/></returns>
+        Task<decimal> GetSmallestMostPopularPrice(string directionCode, byte mostPopularPercent);
         Task<string> GetCityCodeForAirport(string airportCode);
     }
 
@@ -46,9 +53,19 @@ namespace FlyAnytime.SearchEngine
             return airport2city.GetOrAdd(airportCode, val);
         }
 
+        private string GenerateKey(params string[] parts)
+        {
+            return string.Join("-!-", parts);
+        }
+
+        private string[] ParseKey(string key)
+        {
+            return key.Split("-!-");
+        }
+
         public async Task<decimal> GetAveragePrice(string directionKey)
         {
-            return await _cache.GetOrCreateAsync(directionKey, async item =>
+            return await _cache.GetOrCreateAsync("av-" + directionKey, async item =>
             {
                 var key = item.Key.ToString();
                 var now = DateTimeHelper.UnixNow;
@@ -61,6 +78,51 @@ namespace FlyAnytime.SearchEngine
                 item.SetSlidingExpiration(TimeSpan.FromHours(8));
 
                 return AverageCalculator.GetAvarege(priceHistory, 0.8M);
+            });
+        }
+
+        public async Task<decimal> GetSmallestMostPopularPrice(string directionKey, byte mostPopularPercent)
+        {
+            const string prefix = "qua";
+            var key = GenerateKey(prefix, directionKey, mostPopularPercent.ToString());
+            return await _cache.GetOrCreateAsync(key, async item =>
+            {
+                var keyParts = ParseKey(item.Key.ToString());
+                var key = keyParts[1];
+                var now = DateTimeHelper.UnixNow;
+                var historyPeriod = DateTime.Now.AddMonths(-6).ToUtcUnix();
+
+                var priceHistory = await _context.Set<SearchResultItem>()
+                                            .Where(i => i.Code == key && i.CreationDateTime >= historyPeriod)
+                                            .Select(x => x.Price)
+                                            .ToListAsync();
+
+                var searchesCountTask = _context.Set<SearchCode2Count>()
+                                            .Where(i => i.Code == key && i.CreationDateTime >= historyPeriod)
+                                            .Select(x => x.SearchCount)
+                                            .FirstOrDefaultAsync();
+
+                var pricesAggregated = AverageCalculator.AggregatePrices(priceHistory);
+                var searchesCount = await searchesCountTask;
+
+                if (searchesCount == default || pricesAggregated == null || pricesAggregated.Count == 0)
+                {
+                    item.SetAbsoluteExpiration(TimeSpan.FromMinutes(20));
+                    return 0;
+                }
+
+                var arrOrderd = pricesAggregated.OrderBy(x => x.Value);
+
+                item.SetAbsoluteExpiration(TimeSpan.FromHours(8));
+                var percentValue = int.Parse(keyParts[2]);
+                foreach (var priceStat in arrOrderd)
+                {
+                    var chancePercent = priceStat.Count*100 / searchesCount;
+                    if (chancePercent >= percentValue)
+                        return priceStat.Value;
+                }
+                    
+                return arrOrderd.Last().Value;
             });
         }
     }

@@ -15,11 +15,13 @@ namespace FlyAnytime.SearchEngine
 {
     public class SaveSearchResultBackgroundService : BackgroundService
     {
-        private readonly ChannelReader<ApiResultModel> _channel;
+        private readonly ChannelReader<List<ApiResultModel>> _channel;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly SearchEngineContext _dbContext;
         private readonly IServiceScope _scope;
-        public SaveSearchResultBackgroundService(ChannelReader<ApiResultModel> channelReader, IServiceScopeFactory serviceScopeFactory)
+        public SaveSearchResultBackgroundService(
+            ChannelReader<List<ApiResultModel>> channelReader, 
+            IServiceScopeFactory serviceScopeFactory)
         {
             _channel = channelReader;
             _serviceScopeFactory = serviceScopeFactory;
@@ -31,21 +33,25 @@ namespace FlyAnytime.SearchEngine
         {
             while (!cancellationToken.IsCancellationRequested)
             {                
-                await foreach (var item in _channel.ReadAllAsync(cancellationToken))
+                await foreach (var items in _channel.ReadAllAsync(cancellationToken))
                 {
                     try
                     {
-                        var dbModel = new SearchResultItem
+                        foreach (var item in items)
                         {
-                            Price = item.PriceInEur,
+                            var dbModel = new SearchResultItem
+                            {
+                                Price = item.PriceInEur,
 
-                            ArrivalToDestinationDateTimeUtc = item.ArrivalDateTimeToDestinationUtc,
-                            DepartureFromDestinationDateTimeUtc = item.BackDateTimeFromDestinationUtc,
+                                ArrivalToDestinationDateTimeUtc = item.ArrivalDateTimeToDestinationUtc,
+                                DepartureFromDestinationDateTimeUtc = item.BackDateTimeFromDestinationUtc,
 
-                            Code = ApiRequestHelper.GenerateRequestGroupName(item.CityCodeFrom, item.CityCodeTo)
-                        };
+                                Code = ApiRequestHelper.GenerateRequestGroupName(item.CityCodeFrom, item.CityCodeTo)
+                            };
 
-                        _dbContext.Add(dbModel);
+                            _dbContext.Add(dbModel);
+                        }
+                        
                         await _dbContext.SaveChangesAsync();
                     }
                     catch (Exception e) { }

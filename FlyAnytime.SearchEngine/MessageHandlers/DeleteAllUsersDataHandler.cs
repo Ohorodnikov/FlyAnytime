@@ -21,7 +21,7 @@ namespace FlyAnytime.SearchEngine.MessageHandlers
 
         public async Task Handle(DeleteAllUsersDataMessage message)
         {
-            await _context.Set<SearchResultItem>().RemoveAll();
+            //await _context.Set<SearchResultItem>().RemoveAll();
         }
     }
 }

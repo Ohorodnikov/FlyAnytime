@@ -84,17 +84,7 @@ namespace FlyAnytime.Messaging
             declaredChats.Add(chatName);
         }
 
-        private void DoPublish<TMessage>(string chatName, TMessage msg, IBasicProperties props = null)
-            where TMessage : BaseMessage
-        {
-            logger.LogInformation($"{DateTime.Now}: Send message {msg.GetType().Name} for exchange {chatName}");
-
-            _consumerChannel.BasicPublish(exchange: chatName,
-                                          routingKey: "",
-                                          //mandatory: true,
-                                          basicProperties: props,
-                                          body: Obj2Bytes(msg));
-        }
+        
 
         #region Subscribe
 
@@ -125,7 +115,11 @@ namespace FlyAnytime.Messaging
 
             var consumer = new AsyncEventingBasicConsumer(_consumerChannel);
 
-            consumer.Received += async (sender, ea) => await OnMessageReceive(sender, ea, onReceive);
+            consumer.Received += async (sender, ea) =>
+                                                    {
+                                                        _consumerChannel.BasicAck(ea.DeliveryTag, false);
+                                                        OnMessageReceive(sender, ea, onReceive);
+                                                    };
 
             _consumerChannel.BasicConsume(consumer: consumer,
                                           queue: q,
@@ -176,13 +170,16 @@ namespace FlyAnytime.Messaging
             where TMessage : BaseMessage
             where THandler : IMessageHandler
         {
-            using var scope = _serviceProvider.CreateScope();
-            var allHandlers = scope.ServiceProvider.GetServices<THandler>();
-            var log = scope.ServiceProvider.GetService<ILogger<RabbitMessageBus>>();
-            log.LogInformation($"{DateTime.Now}: Receive {typeof(TMessage).Name} on {typeof(THandler).Name}");
+            
+            
             try
             {
-                await act(ea, GetMessage<TMessage>(ea), allHandlers);
+                using var scope = _serviceProvider.CreateScope();
+                var allHandlers = scope.ServiceProvider.GetServices<THandler>();
+                var log = scope.ServiceProvider.GetService<ILogger<RabbitMessageBus>>();
+                var msg = GetMessage<TMessage>(ea);
+                log.LogInformation($"{DateTime.Now}: Receive {typeof(TMessage).Name}, Id: {msg.MessageId} on {typeof(THandler).Name}");
+                await act(ea, msg, allHandlers);
             }
             catch (Exception)
             {
@@ -190,7 +187,6 @@ namespace FlyAnytime.Messaging
             }
             finally
             {
-                _consumerChannel.BasicAck(ea.DeliveryTag, false);
             }
         }
 
@@ -263,6 +259,18 @@ namespace FlyAnytime.Messaging
                 resultBase.ErrorMessage = e.Message;
                 return resultBase;
             }
+        }
+
+        private void DoPublish<TMessage>(string chatName, TMessage msg, IBasicProperties props = null)
+            where TMessage : BaseMessage
+        {
+            logger.LogInformation($"{DateTime.Now}: Send message {msg.GetType().Name}, Id: {msg.MessageId} for exchange {chatName}");
+
+            _consumerChannel.BasicPublish(exchange: chatName,
+                                          routingKey: "",
+                                          //mandatory: true,
+                                          basicProperties: props,
+                                          body: Obj2Bytes(msg));
         }
 
         #endregion

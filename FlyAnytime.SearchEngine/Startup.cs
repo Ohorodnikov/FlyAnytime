@@ -47,7 +47,7 @@ namespace SearchEngine
 
             services.AddMemoryCache();
 
-            services.AddChannel<ApiResultModel>();
+            services.AddChannel<List<ApiResultModel>>();
             services.AddHostedService<SaveSearchResultBackgroundService>();
 
             services.AddTransient<IApiRequester, KiwiSearchApi>();
