@@ -13,6 +13,7 @@ namespace FlyAnytime.Messaging.Messages
 
         public long UserId { get; set; }
     }
+
     public class GetLoginLinkResponseMessage : BaseResponseMessage<GetLoginLinkRequestMessage>
     {
         private GetLoginLinkResponseMessage() { }
@@ -26,5 +27,4 @@ namespace FlyAnytime.Messaging.Messages
 
         public string LoginUrl { get; set; }
     }
-
 }

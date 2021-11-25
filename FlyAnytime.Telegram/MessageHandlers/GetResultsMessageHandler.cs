@@ -1,5 +1,7 @@
-﻿using FlyAnytime.Messaging.Messages;
+﻿using FlyAnytime.Messaging;
+using FlyAnytime.Messaging.Messages;
 using FlyAnytime.Messaging.Messages.SearchEngine;
+using FlyAnytime.Messaging.Messages.UrlShortener;
 using FlyAnytime.Telegram.EF;
 using FlyAnytime.Telegram.Models;
 using FlyAnytime.Tools;
@@ -38,7 +40,7 @@ namespace FlyAnytime.Telegram.MessageHandlers
             var endDayTime = FormatDateTime(FlyBackEnd);
             var specialMark = IsCheap ? "❗️" : "";
             var amtFormated = ((int)Amount).ToString();
-            return $"- {startDayTime} - {endDayTime}, [{amtFormated} {CurrencySymbol}](){specialMark}";
+            return $"- {startDayTime} - {endDayTime}, [{amtFormated} {CurrencySymbol}]({Link}){specialMark}";
         }
     }
 
@@ -68,11 +70,18 @@ namespace FlyAnytime.Telegram.MessageHandlers
         private readonly ITelegramBotClient _tgClient;
         private readonly TelegramContext _dbContext;
         private readonly ILocalizationHelper _localizationHelper;
-        public GetResultsMessageHandler(ITelegramBotClient tgClient, TelegramContext dbContext, ILocalizationHelper localizationHelper)
+        private readonly IMessageBus _messageBus;
+
+        public GetResultsMessageHandler(
+            ITelegramBotClient tgClient, 
+            TelegramContext dbContext, 
+            ILocalizationHelper localizationHelper,
+            IMessageBus messageBus)
         {
             _dbContext = dbContext;
             _tgClient = tgClient;
             _localizationHelper = localizationHelper;
+            _messageBus = messageBus;
         }
 
         public async Task Handle(SearchResultMessage message)
@@ -99,6 +108,9 @@ namespace FlyAnytime.Telegram.MessageHandlers
             foreach (var res in message.Results)
             {
                 var ocr = dict.GetOrAdd(res.CityTo, cityCode => CreateResult(cityCode, message.ChatId).GetAwaiter().GetResult());
+                
+                var msg = new GetShortenUrlRequest(res.ResultUrl);
+                var link = await _messageBus.Publish<GetShortenUrlRequest, GetShortenUrlResponse>(msg);
 
                 var ofr = new OneFlyResult
                 {
@@ -107,7 +119,7 @@ namespace FlyAnytime.Telegram.MessageHandlers
                     Culture = culture,
                     Amount = res.Price,
                     CurrencySymbol = curr,
-                    Link = res.ResultUrl,
+                    Link = link.ShortUrl,
                     IsCheap = res.DiscountPercent <= -10 //Discount is more than 10%
                 };
 
