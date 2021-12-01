@@ -51,7 +51,7 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
                 ChatId = message.ChatId,
                 ChatOwner = savedUser,
                 IsGroup = message.IsGroup,
-                Title = message.ChatName
+                Title = message.ChatName,
             };
 
             await _chatRepo.TryCreate(chat);

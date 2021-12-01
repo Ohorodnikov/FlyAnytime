@@ -2,6 +2,7 @@
 using FlyAnytime.Messaging.Messages.SearchSettings;
 using FlyAnytime.Telegram.EF;
 using FlyAnytime.Telegram.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,13 +31,31 @@ namespace FlyAnytime.Telegram.MessageHandlers
                 await UpdateCountry(savedCountry, message);
         }
 
+        private async Task<Currency> GetOrCreateCurrency(string currCode)
+        {
+            var curr = await _dbContext.Set<Currency>().Where(x => x.Code == currCode).FirstOrDefaultAsync();
+
+            if (curr != null)
+                return curr;
+
+            curr = new Currency
+            {
+                Code = currCode
+            };
+
+            await _dbContext.AddAsync(curr);
+            await _dbContext.SaveChangesAsync();
+
+            return curr;
+        }
+
         private async Task AddContry(AddOrUpdateCountryMessage message)
         {
             var country = new Country
             {
                 Code = message.Code,
                 Name = message.Name,
-                CurrencyCode = message.CurrencyToSearch
+                Currency = await GetOrCreateCurrency(message.CurrencyToSearch)
             };
 
             _dbContext.Add(country);
@@ -48,8 +67,9 @@ namespace FlyAnytime.Telegram.MessageHandlers
         private async Task UpdateCountry(Country country, AddOrUpdateCountryMessage message)
         {
             country.Name = message.Name;
-            country.CurrencyCode = message.CurrencyToSearch;
-
+            if (country.Currency.Code != message.CurrencyToSearch)
+                country.Currency = await GetOrCreateCurrency(message.CurrencyToSearch);
+            
             await _dbContext.SaveChangesAsync();
 
             await _localizationHelper.AddOrUpdateEntityLocalizations(country, message.LanguageCode2Value);

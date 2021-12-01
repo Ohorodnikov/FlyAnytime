@@ -43,8 +43,8 @@ namespace FlyAnytime.SearchEngine
                             {
                                 Price = item.PriceInEur,
 
-                                ArrivalToDestinationDateTimeUtc = item.ArrivalDateTimeToDestinationUtc,
-                                DepartureFromDestinationDateTimeUtc = item.BackDateTimeFromDestinationUtc,
+                                ArrivalToDestinationDateTimeUtc = item.FromDateTime.EndUtc,
+                                DepartureFromDestinationDateTimeUtc = item.ReturnDateTime.StartUtc,
 
                                 Code = ApiRequestHelper.GenerateRequestGroupName(item.CityCodeFrom, item.CityCodeTo)
                             };

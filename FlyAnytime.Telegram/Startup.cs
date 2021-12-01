@@ -4,6 +4,7 @@ using FlyAnytime.Core.Entity;
 using FlyAnytime.Messaging;
 using FlyAnytime.Messaging.Helpers;
 using FlyAnytime.Messaging.Messages;
+using FlyAnytime.Messaging.Messages.ChatSettings;
 using FlyAnytime.Messaging.Messages.SearchEngine;
 using FlyAnytime.Messaging.Messages.SearchSettings;
 using FlyAnytime.Telegram.Bot;
@@ -129,7 +130,7 @@ namespace FlyAnytime.Telegram
             eventBus.Subscribe<AddOrUpdateCountryMessage, AddOrUpdateCountryHandler>();
             eventBus.Subscribe<DeleteCityMessage, DeleteCityHandler>();
             eventBus.Subscribe<DeleteCountryMessage, DeleteCountryHandler>();
-
+            eventBus.Subscribe<ChangeChatCurrencyMessage, ChangeChatCurrencyHandler>();
 
             eventBus.Subscribe<SearchResultMessage, GetResultsMessageHandler>();
             eventBus.Subscribe<ErrorDuringSearchMessage, ErrorDuringSearchHandler>();            

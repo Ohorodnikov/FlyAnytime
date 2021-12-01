@@ -1,14 +1,18 @@
 ﻿using FlyAnytime.SearchEngine.EF;
 using FlyAnytime.SearchEngine.Engine;
+using FlyAnytime.SearchEngine.Engine.ApiRequesters;
 using FlyAnytime.SearchEngine.Models.DbModels;
 using FlyAnytime.Tools;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace FlyAnytime.SearchEngine
@@ -24,16 +28,89 @@ namespace FlyAnytime.SearchEngine
         /// <returns>Returns first value with chance to get is more than <paramref name="mostPopularPercent"/></returns>
         Task<decimal> GetSmallestMostPopularPrice(string directionCode, byte mostPopularPercent);
         Task<string> GetCityCodeForAirport(string airportCode);
+        Task<List<TSearchRes>> GetOrAddSearchResults<TSearchRes>(string directionKey, long flyFromDT, long flyToDT, Func<Task<List<TSearchRes>>> resGetter)
+            where TSearchRes : ApiResultModel;
     }
 
     public class CacheHelper : ICacheHelper
     {
         private readonly IMemoryCache _cache;
         private readonly SearchEngineContext _context;
-        public CacheHelper(IMemoryCache cache, SearchEngineContext context)
+        private readonly ILogger<CacheHelper> _logger;
+
+        public CacheHelper(IMemoryCache cache, SearchEngineContext context, ILogger<CacheHelper> logger)
         {
             _cache = cache;
             _context = context;
+            _logger = logger;
+        }
+        
+        public async Task<List<TSearchRes>> GetOrAddSearchResults<TSearchRes>(string directionKey,
+                                                                              long flyFromDT,
+                                                                              long flyToDT,
+                                                                              Func<Task<List<TSearchRes>>> resGetter)
+            where TSearchRes : ApiResultModel
+        {
+            var masterKeyPref = "dir2diapason";
+
+            var masterKey = GenerateKey(masterKeyPref, directionKey);
+
+            var q = _cache.GetOrCreate(masterKey, e => 
+            {
+                e.SetSlidingExpiration(TimeSpan.FromHours(24));
+
+                return new List<(long from, long to)>();
+            });
+
+            foreach (var key in q)
+            {
+                var flyFrom = key.from;
+                var flyTo = key.to;
+
+                if (flyFrom <= flyFromDT && flyTo >= flyToDT)
+                {
+                    if (_cache.TryGetValue((directionKey, flyFrom, flyTo), out var res1))
+                    {
+                        _logger.LogInformation($"Read from cache for key: {masterKey}");
+                        var r = (List<TSearchRes>)res1;
+
+                        return r.Copy().Where(x => x.FromDateTime.StartUtc >= flyFromDT && x.ReturnDateTime.EndUtc <= flyToDT).ToList();
+                    }
+                }
+            }
+
+            q.Add((flyFromDT, flyToDT));
+
+            PostEvictionDelegate onSubKeyExpire = (object key, object value, EvictionReason reason, object st) =>
+            {
+                var keyTyped = ((string direction, long from, long to))key;
+                var masterKey2 = GenerateKey(masterKeyPref, keyTyped.direction);
+
+                if (_cache.TryGetValue(masterKey2, out var res))
+                {
+                    var rTyped = (List<(long, long)>)res;
+
+                    rTyped.Remove((keyTyped.from, keyTyped.to));
+                }
+            };
+
+            var expireTime = TimeSpan.FromMinutes(20);
+            var exToken = new CancellationChangeToken(new CancellationTokenSource(expireTime).Token);
+            var subKey = (directionKey, flyFromDT, flyToDT);
+
+            var res = await _cache.GetOrCreateAsync(subKey, async item =>
+            {
+                _logger.LogInformation($"Send search request for key: {masterKey}");
+
+                item
+                    .SetAbsoluteExpiration(expireTime)
+                    .AddExpirationToken(exToken)
+                    .RegisterPostEvictionCallback(onSubKeyExpire);
+
+                return await resGetter();
+            });
+
+            return res.Copy();
         }
 
         private static readonly ConcurrentDictionary<string, string> airport2city = new ConcurrentDictionary<string, string>();

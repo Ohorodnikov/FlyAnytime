@@ -13,7 +13,7 @@ namespace FlyAnytime.Telegram.Models
         public virtual string Code { get; set; }
         public virtual string Name { get; set; }
 
-        public virtual string CurrencyCode { get; set; }
+        public virtual Currency Currency { get; set; }
 
         public string TypeDescriptor => "Country";
     }
@@ -24,9 +24,9 @@ namespace FlyAnytime.Telegram.Models
 
         public override void SetMapping(EntityTypeBuilder<Country> mapBuilder)
         {
-            mapBuilder.Property(x => x.Code).IsRequired();
+            mapBuilder.HasIndex(x => x.Code).IsUnique();
             mapBuilder.Property(x => x.Name).IsRequired();
-            mapBuilder.Property(x => x.CurrencyCode).IsRequired();
+            //mapBuilder.Property(x => x.Currency.Id).IsRequired();
         }
     }
 }

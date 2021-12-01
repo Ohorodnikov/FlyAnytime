@@ -21,7 +21,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 
         protected override string GetExplanationText(Models.Chat chat)
         {
-            var chatCurrency = chat.ChatCountry.CurrencyCode;
+            var chatCurrency = chat.Currency.Code;
             return $"Press and type max price in {chatCurrency} and Country you want to fly to";
         }
 
@@ -76,7 +76,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
                 $@"Great! We will sent **one message** per day with next settings:
 - Fly from {countryFromLocalization} {cityFromLocalization}
 - Fly to {countryToName}
-- Ticket costs less than {price} {countryFrom.CurrencyCode}";
+- Ticket costs less than {price} {chat.Currency.Code}";
 
             await Bot.Bot.SendTextMessageAsync(ChatId, summaryMsg, ParseMode.Markdown);
 

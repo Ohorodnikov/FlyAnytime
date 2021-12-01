@@ -139,11 +139,14 @@ namespace FlyAnytime.SearchEngine.Engine
 
             await _dbContext.SaveChangesAsync();
 
+            var flyFromStartDay = new DateTime(flyFrom.Year, flyFrom.Month, flyFrom.Day, 0, 0, 0).ToUtcUnix();
+            var returnToEndDay = new DateTime(returnTo.Year, returnTo.Month, returnTo.Day, 23, 59, 59).ToUtcUnix();
+
             var results = new List<OneResult>(cities.Count*takeOneDirectionResults);
             byte mostPopularPercent = 70;
             foreach (var r in requests)
             {
-                var resultTask = r.Send();
+                var resultTask = _cacheHelper.GetOrAddSearchResults(r.Key, flyFromStartDay, returnToEndDay, r.Send);
                 var avTask = _cacheHelper.GetSmallestMostPopularPrice(r.Key, mostPopularPercent);
 
                 await Task.WhenAll(resultTask, avTask);
@@ -196,8 +199,8 @@ namespace FlyAnytime.SearchEngine.Engine
 
             return data
                 .Where(settings.GetFilterForPrice(averagePrice))
-                .Where(d => FilterHelper.IsDateInsideAllowedSlots(d.DepartureFromDateTimeLocal, slotsToStart))
-                .Where(d => FilterHelper.IsDateInsideAllowedSlots(d.ArrivalBackDateTimeLocal, slotsToBack))
+                .Where(d => FilterHelper.IsDateInsideAllowedSlots(d.FromDateTime.StartLocal, slotsToStart))
+                .Where(d => FilterHelper.IsDateInsideAllowedSlots(d.ReturnDateTime.EndLocal, slotsToBack))
                 ;
         }
 
@@ -211,8 +214,8 @@ namespace FlyAnytime.SearchEngine.Engine
                 {
                     CityFrom = x.CityCodeFrom,
                     CityTo = x.CityCodeTo,
-                    DateTimeFrom = x.DepartureFromDateTimeLocal,
-                    DateTimeBack = x.ArrivalBackDateTimeLocal,
+                    DateTimeFrom = x.FromDateTime.StartLocal,
+                    DateTimeBack = x.ReturnDateTime.EndLocal,
                     Price = x.Price,
                     ResultUrl = x.LinkOnResult,
                     DiscountPercent = discountValue

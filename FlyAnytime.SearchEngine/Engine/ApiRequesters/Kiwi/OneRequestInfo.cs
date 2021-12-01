@@ -80,13 +80,13 @@ namespace FlyAnytime.SearchEngine.Engine.ApiRequesters.Kiwi
             {
                 var routeOrdered = oneRes.Route.OrderBy(x => DateTimeHelper.IsoToUnix(x.UtcArrival));
 
-                var firstDeparture = routeOrdered.Where(x => x.IsReturn == 0).First().LocalDeparture;
-                var arrivalToDestination = routeOrdered.Where(x => x.IsReturn == 0).Last().UtcArrival;
+                var firstDeparture = routeOrdered.Where(x => x.IsReturn == 0).First();
+                var arrivalToDestination = routeOrdered.Where(x => x.IsReturn == 0).Last();
 
                 var isRet = isRoundSearch ? 1 : 0;
 
-                var lastArrival = routeOrdered.Where(x => x.IsReturn == isRet).Last().LocalDeparture;
-                var departureFromDestination = routeOrdered.Where(x => x.IsReturn == isRet).First().UtcDeparture;
+                var lastArrival = routeOrdered.Where(x => x.IsReturn == isRet).Last();
+                var departureFromDestination = routeOrdered.Where(x => x.IsReturn == isRet).First();
 
                 var apiModel = new ApiResultModel
                 {
@@ -97,11 +97,21 @@ namespace FlyAnytime.SearchEngine.Engine.ApiRequesters.Kiwi
                     PriceInEur = oneRes.Price / resultTyped.FxRate,
                     Currency = resultTyped.Currency,
 
-                    DepartureFromDateTimeLocal = DateTimeHelper.IsoToUnix(firstDeparture),
-                    ArrivalBackDateTimeLocal = DateTimeHelper.IsoToUnix(lastArrival),
+                    FromDateTime = new FlyDateTimeInfo
+                    {
+                        StartLocal = DateTimeHelper.IsoToUnix(firstDeparture.LocalDeparture),
+                        StartUtc = DateTimeHelper.IsoToUnix(firstDeparture.UtcDeparture),
+                        EndLocal = DateTimeHelper.IsoToUnix(arrivalToDestination.LocalArrival),
+                        EndUtc = DateTimeHelper.IsoToUnix(arrivalToDestination.UtcArrival)
+                    },
 
-                    ArrivalDateTimeToDestinationUtc = DateTimeHelper.IsoToUnix(arrivalToDestination),
-                    BackDateTimeFromDestinationUtc = DateTimeHelper.IsoToUnix(departureFromDestination),
+                    ReturnDateTime = new FlyDateTimeInfo
+                    {
+                        StartLocal = DateTimeHelper.IsoToUnix(departureFromDestination.LocalDeparture),
+                        StartUtc = DateTimeHelper.IsoToUnix(departureFromDestination.UtcDeparture),
+                        EndLocal = DateTimeHelper.IsoToUnix(lastArrival.LocalArrival),
+                        EndUtc = DateTimeHelper.IsoToUnix(lastArrival.UtcArrival)
+                    },
 
                     StepoverCountTo = routeOrdered.Where(x => x.IsReturn == 0).Count() - 1,
                     StepoverCountBack = isRoundSearch ? routeOrdered.Where(x => x.IsReturn == 1).Count() - 1 : 0,

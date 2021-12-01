@@ -11,7 +11,7 @@ namespace FlyAnytime.Messaging.Messages
             string firstName, 
             string lastName, 
             string userName,
-            
+
             long chatId,
             string chatName,
             bool isGroup)

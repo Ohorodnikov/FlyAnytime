@@ -22,6 +22,7 @@ namespace FlyAnytime.Telegram.Models
         public virtual Language UserLanguage { get; set; }
         public virtual City ChatCity { get; set; }
         public virtual Country ChatCountry { get; set; }
+        public virtual Currency Currency { get; set; }
     }
 
     public class ChatMapping : EntityMap<Chat, long>

@@ -365,8 +365,14 @@ namespace FlyAnytime.SearchEngine.Tests
                 Price = price,
                 Currency = curr,
                 PriceInEur = price/currencyExchange2EurMap[curr],
-                DepartureFromDateTimeLocal = departure.ToUtcUnix(),
-                ArrivalBackDateTimeLocal = arrival.ToUtcUnix(),
+                FromDateTime = new FlyDateTimeInfo
+                {
+                    StartLocal = departure.ToUtcUnix()
+                },
+                ReturnDateTime = new FlyDateTimeInfo
+                {
+                    EndLocal = arrival.ToUtcUnix()
+                },
                 CityCodeTo = flyTo
             };
         }

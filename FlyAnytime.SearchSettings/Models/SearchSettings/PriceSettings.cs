@@ -19,8 +19,6 @@ namespace FlyAnytime.SearchSettings.Models.SearchSettings
         /// If Type is PercentDiscount => stored between 0 and 100
         /// </summary>
         public decimal Amount { get; set; }
-
-        public string Currency { get; set; }
     }
 
     public class PriceSettingsMap : InternalEntityMap<PriceSettings>

@@ -15,12 +15,18 @@ namespace FlyAnytime.SearchEngine.Engine.ApiRequesters
         public decimal PriceInEur { get; set; }
         public string Currency { get; set; }
 
-        public long ArrivalDateTimeToDestinationUtc { get; set; }
-        public long BackDateTimeFromDestinationUtc { get; set; }
-
-        public long DepartureFromDateTimeLocal { get; set; }
-        public long ArrivalBackDateTimeLocal { get; set; }
+        public FlyDateTimeInfo FromDateTime { get; set; }
+        public FlyDateTimeInfo ReturnDateTime { get; set; }
 
         public string LinkOnResult { get; set; }
+    }
+
+    public class FlyDateTimeInfo
+    {
+        public long StartUtc { get; set; }
+        public long StartLocal { get; set; }
+
+        public long EndUtc { get; set; }
+        public long EndLocal { get; set; }
     }
 }

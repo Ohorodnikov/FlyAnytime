@@ -24,7 +24,7 @@ namespace FlyAnytime.Telegram.Models
 
         public override void SetMapping(EntityTypeBuilder<Language> mapBuilder)
         {
-            mapBuilder.Property(x => x.Code).IsRequired();
+            mapBuilder.HasIndex(x => x.Code).IsUnique();
             mapBuilder.Property(x => x.Name).IsRequired();
             mapBuilder.Property(x => x.Culture).IsRequired();
         }

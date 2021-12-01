@@ -31,6 +31,8 @@ namespace FlyAnytime.SearchSettings.Models
 
         public ObjectId CountryFlyFromId { get; set; }
         public Country CountryFlyFrom { get; set; }
+
+        public string CurrencyCode { get; set; }
     }
 
     public class ChatMap : RootEntityMap<Chat>

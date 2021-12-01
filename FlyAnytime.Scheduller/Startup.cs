@@ -98,6 +98,8 @@ namespace FlyAnytime.Scheduler
 
             eventBus.Subscribe<UpdateChatCityMessage, ChangeChatCityHandler>();
             eventBus.Subscribe<UpdateChatCountryMessage, ChangeChatCountryHandler>();
+            eventBus.Subscribe<ChangeChatCurrencyMessage, ChangeChatCurrencyHandler>();
+
         }
     }
 }

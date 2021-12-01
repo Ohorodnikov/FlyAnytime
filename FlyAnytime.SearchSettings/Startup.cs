@@ -103,6 +103,8 @@ namespace FlyAnytime.SearchSettings
 
             eventBus.Subscribe<UpdateChatCityMessage, ChangeChatCityHandler>();
             eventBus.Subscribe<UpdateChatCountryMessage, ChangeChatCountryHandler>();
+            eventBus.Subscribe<ChangeChatCurrencyMessage, ChangeChatCurrencyHandler>();
+
         }
     }
 }

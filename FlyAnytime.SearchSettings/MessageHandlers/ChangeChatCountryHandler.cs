@@ -38,6 +38,8 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
                 return;
 
             chat.CountryFlyFrom = flyFrom.Entity;
+            chat.CurrencyCode = chat.CountryFlyFrom.DefSearchCurrencyCode;
+
             chat.CityFlyFromId = MongoDB.Bson.ObjectId.Empty;
 
             var res = await _chatRepo.TryReplace(chat);

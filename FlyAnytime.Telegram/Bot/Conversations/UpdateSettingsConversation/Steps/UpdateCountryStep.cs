@@ -27,6 +27,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations.UpdateSettingsConversation.Steps
 
             var settings = await Bot.DbContext.Set<Models.Chat>().FindAsync(ChatId);
             settings.ChatCountry = await Bot.DbContext.Set<Country>().FirstAsync(x => x.Code == countryCode);
+            settings.Currency = settings.ChatCountry.Currency;
 
             await Bot.DbContext.SaveChangesAsync();
 

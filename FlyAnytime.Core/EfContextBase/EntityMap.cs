@@ -33,6 +33,15 @@ namespace FlyAnytime.Core.EfContextBase
             builder.ToTable(TableName);
             builder.HasKey(x => x.Id);
 
+            foreach (var p in builder.Metadata.GetProperties())
+            {
+                if (p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?))
+                {
+                    p.SetPrecision(28);
+                    p.SetScale(6);
+                }
+            }
+
             SetMapping(builder);
         }
 

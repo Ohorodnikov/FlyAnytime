@@ -104,7 +104,8 @@ namespace FlyAnytime.Telegram.MessageHandlers
             var dict = new Dictionary<string, OneCityResult>();
             var chat = await _dbContext.Set<Chat>().FindAsync(message.ChatId);
             var culture = chat.UserLanguage.Culture;
-            var curr = chat.ChatCountry.CurrencyCode;
+            var curr = chat.Currency.Code;
+
             foreach (var res in message.Results)
             {
                 var ocr = dict.GetOrAdd(res.CityTo, cityCode => CreateResult(cityCode, message.ChatId).GetAwaiter().GetResult());

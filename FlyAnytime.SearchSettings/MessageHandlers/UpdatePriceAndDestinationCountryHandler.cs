@@ -7,6 +7,7 @@ using FlyAnytime.SearchSettings.Models.Location;
 using FlyAnytime.SearchSettings.Models.SearchSettings;
 using FlyAnytime.SearchSettings.MongoDb;
 using FlyAnytime.SearchSettings.Repository;
+using FlyAnytime.Tools;
 using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
@@ -80,22 +81,19 @@ namespace FlyAnytime.SearchSettings.MessageHandlers
         }
 
         private async Task<ChatSearchSettings> CreateDefaultSearchSettings(Chat chat, UpdatePriceAndDestinationCountryMessage message)
-        {
-            var country = await _countryRepo.GetById(chat.CountryFlyFromId);
-            var defCurr = country.Entity.DefSearchCurrencyCode;
-            var defPriceSett = CreatePriceSettings(message.PriceMax, defCurr);
+        {   
+            var defPriceSett = CreatePriceSettings(message.PriceMax);
             var flyTo = await _countryRepo.GetOneBy(x => x.Code == message.CountryToFlyCode);
 
             return await GetDefaultSettings(defPriceSett, flyTo.Entity);
         }
 
-        private PriceSettings CreatePriceSettings(decimal amount, string currency)
+        private PriceSettings CreatePriceSettings(decimal amount)
         {
             return new PriceSettings
             {
                 Type = SearchPriceSettingsType.FixPrice,
                 Amount = amount,
-                Currency = currency
             };
         }
 

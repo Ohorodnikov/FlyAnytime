@@ -41,10 +41,10 @@ namespace FlyAnytime.SearchSettings.Helpers
             var chatId = chat.ChatId;
 
             foreach (var s in settings)
-                await ProcessOneSearchSetting(chatId, flyFrom.Entity, s);
+                await ProcessOneSearchSetting(chatId, flyFrom.Entity, chat.CurrencyCode, s);
         }
 
-        private async Task ProcessOneSearchSetting(long chatId, City flyFrom, ChatSearchSettings settings)
+        private async Task ProcessOneSearchSetting(long chatId, City flyFrom, string currencyCode, ChatSearchSettings settings)
         {
             var airports = await _settingsHelper
                             .GetDestinationAirports(settings)
@@ -63,7 +63,7 @@ namespace FlyAnytime.SearchSettings.Helpers
             var ds = settings.DateSettings;
 
             var flyDirection = new FlyDirection(flyFrom.Code, airCodes);
-            var priceSettings = new Messaging.Messages.Scheduler.PriceSettings(ps.Type, ps.Amount, ps.Currency);
+            var priceSettings = new Messaging.Messages.Scheduler.PriceSettings(ps.Type, ps.Amount, currencyCode);
             var tripDuration = new TripDuration(ds.TripDaysCountMin, ds.TripDaysCountMax);
             var schedules = settings.Schedules.Select(x => _settingsHelper.CreateScheduleSettings(x));
 
