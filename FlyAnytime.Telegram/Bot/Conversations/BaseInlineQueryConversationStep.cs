@@ -4,6 +4,7 @@ using FlyAnytime.Tools;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Telegram.Bot;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.InlineQueryResults;
 using Telegram.Bot.Types.ReplyMarkups;
@@ -35,7 +36,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
                 MoveToNextStep = false;
                 var possibleAnswers = await GetAnswersForInlineQuery(inlQ);
 
-                var answersList = new List<InlineQueryResultBase>(40);
+                var answersList = new List<InlineQueryResult>(40);
 
                 for (int i = 0; i < Math.Min(40, possibleAnswers.Count); i++)
                 {
@@ -75,7 +76,7 @@ namespace FlyAnytime.Telegram.Bot.Conversations
             return res;
         }
 
-        protected virtual async Task SendAnswerInlineQuery(InlineQuery inlQ, List<InlineQueryResultBase> possibleAnswers)
+        protected virtual async Task SendAnswerInlineQuery(InlineQuery inlQ, List<InlineQueryResult> possibleAnswers)
         {
             await Bot.Bot.AnswerInlineQueryAsync(inlQ.Id, possibleAnswers, 0, true);
         }

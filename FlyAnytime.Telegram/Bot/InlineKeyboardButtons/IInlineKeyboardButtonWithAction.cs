@@ -17,7 +17,7 @@ namespace FlyAnytime.Telegram.Bot.InlineKeyboardButtons
 
     public abstract class InlineKeyboardButtonWithActionBase : InlineKeyboardButton, IInlineKeyboardButtonWithAction
     {
-        public InlineKeyboardButtonWithActionBase(string text, string buttonGuid)
+        public InlineKeyboardButtonWithActionBase(string text, string buttonGuid) : base(text)
         {
             Text = text;
             CallbackData = buttonGuid;
