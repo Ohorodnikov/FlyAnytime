@@ -21,6 +21,8 @@ namespace FlyAnytime.ApiGateway
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                });
+                })
+                .ConfigureAppConfiguration((hostingContext) => hostingContext.AddEnvironmentVariables())
+                ;
     }
 }

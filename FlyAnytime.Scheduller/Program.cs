@@ -22,7 +22,7 @@ namespace FlyAnytime.Scheduler
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("https://localhost:5005", "https://localhost:5035");
+                    //webBuilder.UseUrls("https://localhost:5005", "https://localhost:5035");
                 });
     }
 }

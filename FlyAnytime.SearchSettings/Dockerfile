@@ -1,13 +1,17 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
+EXPOSE 5003
+EXPOSE 6003
 
-FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 WORKDIR /src
 COPY ["FlyAnytime.SearchSettings/FlyAnytime.SearchSettings.csproj", "FlyAnytime.SearchSettings/"]
+COPY ["FlyAnytime.Core.Web/FlyAnytime.Core.Web.csproj", "FlyAnytime.Core.Web/"]
+COPY ["FlyAnytime.Core/FlyAnytime.Core.csproj", "FlyAnytime.Core/"]
+COPY ["FlyAnytime.Tools/FlyAnytime.Tools.csproj", "FlyAnytime.Tools/"]
+COPY ["FlyAnytime.Messaging/FlyAnytime.Messaging.csproj", "FlyAnytime.Messaging/"]
 RUN dotnet restore "FlyAnytime.SearchSettings/FlyAnytime.SearchSettings.csproj"
 COPY . .
 WORKDIR "/src/FlyAnytime.SearchSettings"

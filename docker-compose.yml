@@ -1,0 +1,104 @@
+version: '3.4'
+
+services:
+    apigateway:
+        build: 
+            context: .
+            dockerfile: ./FlyAnytime.ApiGateway/Dockerfile        
+        restart: always
+        environment:
+            SelfUrl: https://bf88-195-250-62-253.ngrok.io
+            RabbitMqConfiguration__HostName: rabbit
+        depends_on:
+            - rabbitmq
+        ports:
+            - "15001:5001"
+            - "16001:6001" 
+
+    login:
+        build: 
+            context: .
+            dockerfile: ./FlyAnytime.Login/Dockerfile
+        restart: always
+        environment:
+            RabbitMqConfiguration__HostName: rabbit
+            ConnectionStrings__DefaultConnection: Server=host.docker.internal;Database=FA.Login;User Id=sa;Password=sa2008~;
+        depends_on:
+            - rabbitmq
+    
+    searchsettings:
+        build: 
+            context: .
+            dockerfile: ./FlyAnytime.SearchSettings/Dockerfile
+        restart: always
+        environment:
+            RabbitMqConfiguration__HostName: rabbit
+            MongoSettings__Connection: mongodb://FA_VOHO:ZPDwuay2zJBzmewp@cluster0-shard-00-00.y2drj.mongodb.net:27017,cluster0-shard-00-01.y2drj.mongodb.net:27017,cluster0-shard-00-02.y2drj.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-r6kceg-shard-0&authSource=admin&retryWrites=true&w=majority
+            MongoSettings__DbName: FA_SearchSettings
+        depends_on:
+            - rabbitmq
+
+    urlshortener:
+        build: 
+            context: .
+            dockerfile: ./FlyAnytime.UrlShortener/Dockerfile
+        restart: always
+        environment:
+            RabbitMqConfiguration__HostName: rabbit
+            ConnectionStrings__DefaultConnection: Server=host.docker.internal;Database=FA.Urls;User Id=sa;Password=sa2008~;
+        depends_on:
+            - rabbitmq
+
+    scheduller:
+        build: 
+            context: .
+            dockerfile: ./FlyAnytime.Scheduller/Dockerfile
+        restart: always
+        environment:
+            RabbitMqConfiguration__HostName: rabbit
+            ConnectionStrings__DefaultConnection: Server=host.docker.internal;Database=FA.Schedule;User Id=sa;Password=sa2008~;
+        depends_on:
+            - rabbitmq
+        ports:
+            - "15005:5005" 
+            - "16005:6005" 
+
+    engine:
+        build: 
+            context: .
+            dockerfile: ./FlyAnytime.SearchEngine/Dockerfile
+        restart: always
+        environment:
+            RabbitMqConfiguration__HostName: rabbit
+            ConnectionStrings__DefaultConnection: Server=host.docker.internal;Database=FA.SearchResults;User Id=sa;Password=sa2008~;
+            KiwiApiKeys__Search: YL1ro3O_jqJv4mGcPG9gOPg6Get04qoz
+            KiwiApiKeys__Multicity: Su5Ul2X21pPB2TZJba6FbKJPpjGucHI3
+            KiwiApiKeys__Nomad: G5AVZAss02BUUKHOC-EhABnSSMVV7-qh
+        depends_on:
+            - rabbitmq
+
+    telegram:
+        build: 
+            context: .
+            dockerfile: ./FlyAnytime.Telegram/Dockerfile
+        restart: always
+        environment:
+            RabbitMqConfiguration__HostName: rabbit
+            ConnectionStrings__DefaultConnection: Server=host.docker.internal;Database=FA.Telegram;User Id=sa;Password=sa2008~;
+            BotConfiguration__BotToken: 1921225598:AAEsQWyJTBwCHseu2GzuBqxkcgO-4HcyU5k
+        depends_on:
+            - rabbitmq
+        ports:
+            - "1443:443"
+            - "16004:6004"
+
+    rabbitmq:
+        image: rabbitmq
+        hostname: rabbit
+        ports:
+          - "15672:15672"
+          - "5672:5672"
+        expose:
+          - "15672"
+          - "5672"
+  

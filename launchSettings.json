@@ -1,0 +1,18 @@
+{
+  "profiles": {
+    "Docker Compose": {
+      "commandName": "DockerCompose",
+      "commandVersion": "1.0",
+      "serviceActions": {
+        "apigateway": "StartDebugging",
+        "engine": "StartDebugging",
+        "login": "StartDebugging",
+        "rabbitmq": "StartWithoutDebugging",
+        "scheduller": "StartDebugging",
+        "searchsettings": "StartDebugging",
+        "telegram": "StartDebugging",
+        "urlshortener": "StartDebugging"
+      }
+    }
+  }
+}

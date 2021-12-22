@@ -20,7 +20,7 @@ namespace SearchEngine
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
-                    webBuilder.UseUrls("https://localhost:5004", "https://localhost:5044");
+                    //webBuilder.UseUrls("https://localhost:5004", "https://localhost:5044");
                 });
     }
 }
